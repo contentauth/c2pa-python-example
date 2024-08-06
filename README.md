@@ -19,9 +19,7 @@ To build and run this app, you must install:
 - Python 3.10.
 - OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).
 
-:::note:::
-This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
-:::
+NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
 
 ## Process
 
@@ -30,32 +28,32 @@ This app was developed and tested on macOS. It should also work on other operati
 Open a terminal window and follow these steps:
 
 1. Set up [virtual environment](https://docs.python.org/3/library/venv.html) by entering these commands:
-  ```
-  python -m venv c2pa-env
-  source c2pa-env/bin/activate
-  ```
-  These two commands do not produce any output.  
+	 ```
+	python -m venv c2pa-env
+	source c2pa-env/bin/activate
+	```
+	In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` ro whatever environment name you chose.  
 1. Install dependencies:
-  ```
-  pip install -r requirements.txt
-  ```
-  You will see this output in the terminal:
-  ```
-  Collecting c2pa-python==0.5.0
-  ...
-  ```
+	```
+	pip install -r requirements.txt
+	```
+	You will see this output in the terminal:
+	```
+	Collecting c2pa-python==0.5.0
+	...
+	```
 1. Follow the AWS documentation to [Configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) and add AWS credentials to `$HOME/.aws/credentials` as follows (key and token values not shown):
-  ```
-  [default]
-  region=us-east-1
-  aws_access_key_id=...
-  aws_secret_access_key=...
-  aws_session_token=...
-  ```
+	```
+	[default]
+	region=us-east-1
+	aws_access_key_id=...
+	aws_secret_access_key=...
+	aws_session_token=...
+	```
 
-### Step two: Generate CSR and get certificate
+### Step two: Generate KMS key CSR
 
-1. Enter this command to create a KMS key and generate a CSR:
+Enter this command to create a KMS key and generate a CSR:
 
 ```shell
 python setup.py create-key-and-csr {CSR_SUBJECT}
@@ -69,12 +67,12 @@ python setup.py create-key-and-csr 'O=C2PA Python Demo'
 
 TO DO: _Explain 'O=C2PA Python Demo' and what other identifiers could be used here_.
 
-Response:
+You'll see a response like this:
 ```
 Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3f78e5e
 ```
 
-1. Alternatively, if you have an existing KMS key that you that you want to use for signing, then execute this command:
+Alternatively, if you have an existing KMS key that you want to use for signing, then execute this command:
 
 ```shell
 python setup.py generate-certificate-request {KMS_KEY_ID} {CSR_SUBJECT}
@@ -84,9 +82,29 @@ For example:
 ```
 python setup.py generate-certificate-request arn:aws:kms:us-east-1:12312323:key/123-123-123-8b8b-123 "C=US,ST=NY,L=NeW York,O=EXACT ORGANIZATION NAME,CN=EXACT ORGANIZATION NAME"
 ```
----
 
-3. Create a self-signed certificate for use as a root CA:
+Then, set the KMS_KEY_ID environment variable to the value of the KMS key:
+- If you've got an existing KMS key, then use that value. 
+- If you generated the KMS key using `setup.py`, then get the value of `kms_key_id` from `config.json`. For example:
+
+```
+cat config.json
+{"kms_key_id": "abc12361-b6fa-4d95-b71f-8d6ae3abc123"}
+```
+
+Copy this value and set the environment variable like this (for example):
+
+```
+export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
+```
+
+### Get certificate
+
+Use the CSR to purchase a document-signing certificate from a certificate authority (CA). The process is different for each CA.
+
+_Add details of getting a cert from Digicert https://www.digicert.com/tls-ssl/compare-certificates using a CSR_
+
+For testing and demonstration purposes, you can create a self-signed certificate for use as a root CA by using this OpenSSL command:
 
 ```
 $ openssl req -x509 -sha256 \
@@ -95,6 +113,8 @@ $ openssl req -x509 -sha256 \
 -keyout rootCA.key \
 -out rootCA.crt
 ```
+
+This command creates a "fake" root CA key/certificate.
 
 You'll be prompted to enter and confirm a PEM passphrase.  Then you'll see this message:
 
@@ -115,7 +135,7 @@ Common Name (e.g. server FQDN or YOUR name) []: ...
 Email Address []: ...
 ```
 
-4. Sign the CSR with the fake CA key Create certificate using fake CA cert
+4. Sign the CSR with the fake CA key:
 
 ```
 openssl x509 -req \
@@ -127,7 +147,7 @@ openssl x509 -req \
 -copy_extensions copyall
 ```
 
-Response:
+You'll see a response like this:
 
 ```
 Certificate request self-signature ok
@@ -135,34 +155,15 @@ subject=O=C2PA Python Demo
 Enter pass phrase for rootCA.key:
 ```
 
-1. Send CSR to CA to purchase Certificate
-
-A document-signing certificate needs to be purchased from a CA. The process for
-doing this will vary by CA.
-
 ### Step three: Create certificate chain
 
-Create cert chain file PEM with cert issued by CA and CA Root certificate. For example, with the  self-signed certificate:
+Create certificate chain file PEM with certificate issued by CA and CA Root certificate. For example, with the self-signed certificate:
 
 ```
 cat kms-signing.crt rootCA.crt > chain.pem
 ```
 
 ### Step four: Run the application 
-
-1. Set the KMS_KEY_ID environment variable.
-
-Edit `config.json` and get the value of `kms_key_id`. For example:
-
-```
-{"kms_key_id": "abc12361-b6fa-4d95-b71f-8d6ae3abc123"}
-```
-
-Set the environment variable like this (for example):
-
-```
-export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
-```
 
 1. Run the application by entering this command:
 
