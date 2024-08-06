@@ -102,7 +102,7 @@ export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
 
 Use the CSR to purchase a document-signing certificate from a certificate authority (CA). The process is different for each CA.
 
-_Add details of getting a cert from Digicert https://www.digicert.com/tls-ssl/compare-certificates using a CSR_
+_Add details of getting a cert from Digicert https://www.digicert.com/document-trust-manager using a CSR_
 
 For testing and demonstration purposes, you can create a self-signed certificate for use as a root CA by using this OpenSSL command:
 
