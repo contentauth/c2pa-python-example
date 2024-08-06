@@ -8,8 +8,6 @@ Most commonly a CSR will be in a PKCS10 format. The contents of a CSR comprises 
 
 The CSR is signed by the applicant's private key; this proves to the CA that the applicant has control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the applicant's public key so that it can be publicly trusted. 
 
-Before you can order an SSL Certificate, you will need to generate a CSR.
-
 The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys. 
 
 ## Prerequisites
