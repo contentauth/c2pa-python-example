@@ -228,3 +228,9 @@ cat kms-signing.crt rootCA.crt > chain.pem
     curl -X POST -T ~/Desktop/test.jpeg -o signed.jpeg 'http://localhost:5000/attach' 
     ```
     In this example, the image with signed Content Credentials is saved to `signed.jpeg`.
+
+If you encounter any issues running the `curl` command, try using `127.0.0.1` instead of `localhost`.
+
+Confirm that the app signed the output image:
+- If you've installed C2PA Tool, run `c2patool <SIGNED_FILE_NAME>.jpg`.
+- Uploading the image to https://contentcredentials.org/verify.
