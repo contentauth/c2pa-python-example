@@ -102,10 +102,6 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
 
 ## Get certificate
 
-<div class="review-comment" >
-TO DO: Can we use a better term than "fake" here?
-</div>
-
 When purchasing a certificate and key, you might be able to simply click a "Buy" button on the CA's website. Or your can make your own key, create an CSR, and send it to CA.  In either case what comes back is the signed certificate that you use to create a certificate chain.
 
 If you use the CSR you generated in the previous step to purchase a certificate from a CA, the CSR is just an unsigned certificate that is the template for the final certificate.  The CA will take the CSR and create a new certificate with the same parameters and sign it with their root certificate, which makes it a "real" certificate.
@@ -114,23 +110,19 @@ The process is different for each CA (links below are to [Digicert](https://www.
 - The simplest and least expensive option is an [S/MIME email certificate](https://www.digicert.com/tls-ssl/compare-secure-email-smime-certificates).  
 - Other options, such as [document signing certificate](https://www.digicert.com/signing/compare-document-signing-certificates) require more rigor (like proving your identity) and cost more.
 
-<div class="review-comment" >
-TO DO: Add details of getting a cert from Digicert https://www.digicert.com/tls-ssl/compare-certificates using a CSR?
-</div>
-
 For testing and demonstration purposes, you can create a self-signed certificate for use as a root CA. The resulting manifests won't be trusted, but you can use it to run the application to see how it works before purchasing a real certificate from a CA.
 
 Follow these steps:
 
 1. Enter this OpenSSL command:
     ```
-    openssl req -x509 -sha256 \
+    openssl req -x509 \
     -days 1825 \
     -newkey rsa:2048 \
     -keyout rootCA.key \
     -out rootCA.crt
     ```
-    This command creates a "fake" root CA key/certificate.  For a detailed explanation, [see below](#understanding-the-openssl-commands).
+    This command creates a temporary test root CA key/certificate.  For a detailed explanation, [see below](#understanding-the-openssl-commands).
 1. You'll be prompted to enter and confirm a PEM passphrase.  Then you'll see a message like this.  Respond to the prompts to provide the required information:
     ```
     You are about to be asked to enter information that will be incorporated
@@ -148,7 +140,7 @@ Follow these steps:
     Common Name (e.g. server FQDN or YOUR name) []: ...
     Email Address []: ...
     ```
-1. Enter this command to sign the CSR with the "fake" CA key:
+1. Enter this command to sign the CSR with the temporary test CA key:
     ```
     openssl x509 -req \
     -CA rootCA.crt \
@@ -172,15 +164,10 @@ Follow these steps:
 The [`openssl req -x509`](https://docs.openssl.org/master/man1/openssl-req/) command
 creates a self-signed certificate for use as a root CA.  The other options in the command are:
 
-<div class="review-comment" >
-OpenSSL docs don't show that `-sha256` is supported for `openssl req -x509` command...?
-</div>
-
 | Option and value | Explanation |
 |--------|-------------|
-| -sha256 | ? |
 | -days 1825 | Specifies that the certificate is good for 1825 days (five years) from today. |
-| -newkey rsa:2048 | Generate a new 2048 bit private key. |
+| -newkey rsa:2048 | Generate a new 2048-bit private key using RSA encryption. |
 | -keyout rootCA.key | Save the private key to the `rootCA.key` file. |
 | -out rootCA.crt | Save the root certificate to the `rootCA.crt` file. |
 
@@ -233,4 +220,4 @@ If you encounter any issues running the `curl` command, try using `127.0.0.1` in
 
 Confirm that the app signed the output image:
 - If you've installed C2PA Tool, run `c2patool <SIGNED_FILE_NAME>.jpg`.
-- Uploading the image to https://contentcredentials.org/verify.
+- Uploading the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
