@@ -2,7 +2,7 @@
 
 ## Overview 
 
-[This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple app that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
+[This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple application that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
 
 The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS.
 
@@ -37,6 +37,7 @@ Open a terminal window and follow these steps:
     In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.  
 1. Install dependencies:
     ```
+    cd c2pa-python-example
     pip install -r requirements.txt
     ```
     You will see this output in the terminal:
@@ -44,6 +45,7 @@ Open a terminal window and follow these steps:
     Collecting c2pa-python==0.5.0
     ...
     ```
+
 
  ## Set AWS credentials
 
@@ -62,7 +64,7 @@ aws_session_token=...
 
 If you have an existing KMS key that you want to use for signing, follow these steps to generate a CSR:
 
-1. Set the KMS_KEY_ID environment variable to the value of the KMS key:
+1. Set the KMS_KEY_ID environment variable to the value of the KMS key; for example:
     ```
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
@@ -93,7 +95,8 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     You'll see a response like this:
     ```
     Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Consider setting an environment variable: `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
+    Consider setting an environment variable: 
+    `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
 1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
     ```
@@ -218,6 +221,6 @@ cat kms-signing.crt rootCA.crt > chain.pem
 
 If you encounter any issues running the `curl` command, try using `127.0.0.1` instead of `localhost`.
 
-Confirm that the app signed the output image:
+Confirm that the app signed the output image by doing one of these:
 - If you've installed C2PA Tool, run `c2patool <SIGNED_FILE_NAME>.jpg`.
-- Uploading the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
+- Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
