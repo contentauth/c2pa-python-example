@@ -34,7 +34,7 @@ Open a terminal window and follow these steps:
     python -m venv c2pa-env
     source c2pa-env/bin/activate
     ```
-    In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` ro whatever environment name you chose.  
+    In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.  
 1. Install dependencies:
     ```
     pip install -r requirements.txt
