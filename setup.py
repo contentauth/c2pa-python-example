@@ -18,15 +18,18 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509 import Name, CertificateSigningRequestBuilder, NameAttribute, SignatureAlgorithmOID, ExtensionType, OID_TIME_STAMPING, OID_CODE_SIGNING, OID_KEY_USAGE, OID_EXTENDED_KEY_USAGE, OID_BASIC_CONSTRAINTS
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec
 from pathlib import Path
 import json
 
 
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
 end_marker = '-----END CERTIFICATE REQUEST-----'
-hash_alg = 'RSASSA_PKCS1_V1_5_SHA_256'
-sign_oid = '1.2.840.113549.1.1.11'
+hash_alg = 'ECDSA_SHA_256'
+# This magic string corresponds to [SignatureAlgorithmOID.ECDSA_WITH_SHA256][^1].
+#
+# [^1]: https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.SignatureAlgorithmOID.ECDSA_WITH_SHA256
+sign_oid = '1.2.840.10045.4.3.2'
 csr_file = 'kms-signing.csr'
 config_file = 'config.json'
 
@@ -36,7 +39,7 @@ def create_kms_key():
     response = kms.create_key(
         Description='C2PA Python KMS Demo Key',
         KeyUsage='SIGN_VERIFY',
-        KeySpec='RSA_2048',
+        KeySpec='ECC_NIST_P256',
     )
 
     key_id = response['KeyMetadata']['KeyId']
@@ -67,9 +70,8 @@ def generate_certificate_request(kms_key: str, subject: str):
     pubkey_der = response['PublicKey']
 
     # Create temporary private key
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
+    private_key = ec.generate_private_key(
+        ec.SECP256R1()
     )
 
     # Setup CSR file Subject
@@ -110,12 +112,14 @@ def generate_certificate_request(kms_key: str, subject: str):
     digest = digest.digest()
 
     response = kms.sign(KeyId=kms_key, Message=digest,
-                        MessageType='DIGEST', SigningAlgorithm='RSASSA_PKCS1_V1_5_SHA_256')
+                        MessageType='DIGEST', SigningAlgorithm=hash_alg)
     signature = response['Signature']
 
     sigAlgIdentifier = pyasn1_modules.rfc2314.SignatureAlgorithmIdentifier()
-    sigAlgIdentifier.setComponentByName('algorithm',
-                                        univ.ObjectIdentifier('1.2.840.113549.1.1.11'))
+    sigAlgIdentifier.setComponentByName(
+        'algorithm',
+        univ.ObjectIdentifier(sign_oid)
+    )
 
     csr_request = pyasn1_modules.rfc2986.CertificationRequest()
 

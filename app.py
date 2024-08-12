@@ -1,5 +1,6 @@
 from flask import Flask, request
 from c2pa import *
+from hashlib import sha256
 import boto3
 import json
 import io
@@ -54,7 +55,7 @@ def resize():
 
     builder = Builder(manifest)
 
-    signer = create_signer(sign, SigningAlg.PS256,
+    signer = create_signer(sign, SigningAlg.ES256,
                            cert_chain, "http://timestamp.digicert.com")
 
     result = io.BytesIO(b"")
@@ -64,4 +65,5 @@ def resize():
 
 
 def sign(data: bytes) -> bytes:
-    return kms.sign(KeyId=kms_key_id, Message=data, MessageType="RAW", SigningAlgorithm="RSASSA_PKCS1_V1_5_SHA_256")["Signature"]
+    hashed_data = sha256(data).digest()
+    return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
