@@ -60,6 +60,8 @@ aws_session_token=...
 
 ## Get KMS key and CSR
 
+NOTE: Amazon KMS uses Distinguished Encoding Rules (DER) encoding for cryptographic keys. The C2PA specification does not provide for DER support, but the CAI open-source SDK automatically converts it to a supported format.
+
 ### Use an existing KMS key
 
 If you have an existing KMS key that you want to use for signing, follow these steps to generate a CSR:
