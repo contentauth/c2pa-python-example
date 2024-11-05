@@ -22,6 +22,14 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from pathlib import Path
 import json
 
+# Load env conf values
+from dotenv import dotenv_values
+app_config = dotenv_values(".env")
+endpoint_url = app_config['AWS_ENDPOINT']
+region = app_config['REGION']
+run_mode = app_config['RUN_MODE']
+aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
 
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
 end_marker = '-----END CERTIFICATE REQUEST-----'
@@ -33,13 +41,16 @@ sign_oid = '1.2.840.10045.4.3.2'
 csr_file = 'kms-signing.csr'
 config_file = 'config.json'
 
-kms = boto3.client('kms')
+print("## Using endpoint: ", endpoint_url)
+
+kms = boto3.client('kms', endpoint_url=endpoint_url, region_name=region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
 def create_kms_key():
     response = kms.create_key(
         Description='C2PA Python KMS Demo Key',
         KeyUsage='SIGN_VERIFY',
         KeySpec='ECC_NIST_P256',
+        MultiRegion=False
     )
 
     key_id = response['KeyMetadata']['KeyId']
@@ -60,12 +71,13 @@ def create_key_and_csr(subject):
 @arguably.command
 def generate_certificate_request(kms_key: str, subject: str):
 
-    kms = boto3.client('kms')
-
     key_obj = kms.describe_key(KeyId=kms_key)
+    print(key_obj)
 
     # Get public key from KMS
     response = kms.get_public_key(KeyId=kms_key)
+
+    print(response)
 
     pubkey_der = response['PublicKey']
 
