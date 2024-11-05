@@ -48,8 +48,6 @@ cert_chain_path = app.config["CERT_CHAIN_PATH"]
 # Open certificate chain path file
 cert_chain = open(cert_chain_path, "rb").read()
 
-# TODO: figure out private_key val
-
 if run_mode == 'DEV':
     endpoint_url = app_config['AWS_ENDPOINT']
     print(f'Running example in AWS dev mode with endpoint: {endpoint_url}')
@@ -72,11 +70,12 @@ else:
 print("Using KMS key with ID: " + kms_key_id)
 print("Using certificate chain: " + cert_chain_path)
 
-private_key = open(cert_chain_path, "rb").read()
+private_key = open("chain.pem","rb").read()
 print("Private key loaded into memory")
 
 
 def sign(data: bytes) -> bytes:
+    print(f"Signing data using KMS key id {kms_key_id}")
     hashed_data = sha256(data).digest()
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
@@ -126,7 +125,6 @@ def resize():
     return result.getvalue()
 
 
-
 @app.route("/signer_data", methods=["GET"])
 def signer_data():
     logging.info("Getting signer data")
@@ -145,19 +143,14 @@ def signer_data():
 @app.route("/sign", methods=["POST"])
 def signer():
     print("## Signer called")
-    data = request.get_data()
+    request_data = request.get_data()
     print("## Read request data")
 
+    result = io.BytesIO(b"")
     try:
-      if private_key:
-          print("Using private key for signing")
-          return sign_ps256(data, private_key)
-      else:
-          print("Using KMS for signing")
-          sign(data)
+      print("Using KMS for signing")
+      sign(io.BytesIO(request_data))
     except Exception as e:
         logging.error(e)
 
-    # result placeholder
-    result = io.BytesIO(b"")
-    return result.getvalue()
+    return result
