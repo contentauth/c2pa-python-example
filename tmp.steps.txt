@@ -1,3 +1,5 @@
+- Pre-requsite: Docker installed and running on machine
+
 - Start localstack (-d for detached mode)
 localstack start -d
 
