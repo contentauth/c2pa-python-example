@@ -9,6 +9,7 @@ localstack start -d
 source c2pa-env/bin/activate
 
 - Install `awslocal` if not available (preferrably in venv)
+Docs details: https://docs.localstack.cloud/user-guide/integrations/aws-cli/
 
 - Create a test user
 awslocal iam create-user --user-name test
@@ -22,4 +23,9 @@ The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCE
 Additional doc for localstack user creation: https://docs.localstack.cloud/user-guide/aws/iam/
 
 - Then you can run the setup script: python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo'
+Readme link: https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#generate-a-kms-key-and-csr
 (This will create two files that are "gitignored": `config.json` and `kms-signing.csr`).
+
+- Continue with steps from https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#get-certificate
+
+- Continue with steps from https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#create-certificate-chain
