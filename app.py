@@ -83,8 +83,8 @@ def sign(data: bytes) -> bytes:
     # {
     # 'KeyId': 'string',
     #
-    # The signature value is a DER-encoded object as defined by ANSI X9.62–2005 and RFC 3279 Section 2.2.3.
-    # When you use the HTTP API or the Amazon Web Services CLI, the signature value is Base64-encoded.
+    # The signature value is a DER-encoded object as defined by ANSI X9.62-2005 and RFC 3279 Section 2.2.3.
+    # When you use the HTTP API (or the Amazon Web Services CLI), the signature value is Base64-encoded.
     # 'Signature': b'bytes',
     #
     # 'SigningAlgorithm': 'ECDSA_SHA_256'
