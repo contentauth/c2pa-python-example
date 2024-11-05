@@ -25,11 +25,7 @@ import json
 # Load env conf values
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
-endpoint_url = app_config['AWS_ENDPOINT']
-region = app_config['REGION']
 run_mode = app_config['RUN_MODE']
-aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
-aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
 
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
 end_marker = '-----END CERTIFICATE REQUEST-----'
@@ -41,12 +37,17 @@ sign_oid = '1.2.840.10045.4.3.2'
 csr_file = 'kms-signing.csr'
 config_file = 'config.json'
 
-print("## Using endpoint: ", endpoint_url)
 
 if run_mode == 'DEV':
+    # Run in dev/local mode (uses localstack)
+    endpoint_url = app_config['AWS_ENDPOINT']
+    region = app_config['REGION']
+    aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
+    aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
     kms = boto3.client('kms', endpoint_url=endpoint_url, region_name=region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 else:
     kms = boto3.client('kms')
+
 
 def create_kms_key():
     response = kms.create_key(
