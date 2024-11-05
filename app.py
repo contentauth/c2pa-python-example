@@ -114,6 +114,7 @@ def resize():
 
     builder = Builder(manifest)
 
+    # the signer here take the whole certificates chain
     signer = create_signer(sign,
                             SigningAlg.ES256,
                             cert_chain,
