@@ -1,25 +1,48 @@
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License,
+# Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+# or the MIT license (http://opensource.org/licenses/MIT),
+# at your option.
+# Unless required by applicable law or agreed to in writing,
+# this software is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR REPRESENTATIONS OF ANY KIND, either express or
+# implied. See the LICENSE-MIT and LICENSE-APACHE files for the
+# specific language governing permissions and limitations under
+# each license.
+
 from flask import Flask, request
-from c2pa import *
-from hashlib import sha256
-import boto3
+import logging
 import json
 import io
+import boto3
+import base64
 
+from c2pa import *
+from hashlib import sha256
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
 app.config.from_prefixed_env()
-kms_key_id = app.config["KMS_KEY_ID"]
-cert_chain_path = app.config["CERT_CHAIN_PATH"]
 
-cert_chain = open(cert_chain_path, "rb").read()
+if "KMS_KEY_ID" not in app.config:
+    # local test certs for development
+    private_key = open("tests/certs/ps256.pem","rb").read()
+    cert_chain = open("tests/certs/ps256.pub","rb").read()
+else:  
+    kms_key_id = app.config["KMS_KEY_ID"]
+    cert_chain_path = app.config["CERT_CHAIN_PATH"]
 
-session = boto3.Session()
+    cert_chain = open(cert_chain_path, "rb").read()
 
-kms = session.client('kms')
+    session = boto3.Session()
 
-print("Using KMS key: " + kms_key_id)
-print("Using certificate chain: " + cert_chain_path)
+    kms = session.client('kms')
+
+    print("Using KMS key: " + kms_key_id)
+    print("Using certificate chain: " + cert_chain_path)
 
 
 @app.route("/attach", methods=["POST"])
@@ -67,3 +90,28 @@ def resize():
 def sign(data: bytes) -> bytes:
     hashed_data = sha256(data).digest()
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
+
+
+@app.route("/signer_data", methods=["GET"])
+def signer_data():
+    logging.info("Getting signer data")
+    try:
+        data = json.dumps({
+            "alg": "Ps256",
+            "timestamp_url": "http://timestamp.digicert.com",
+            "signing_url": "http://localhost:5000/sign",
+            "cert_chain": base64.b64encode(cert_chain).decode('utf-8'),
+        })
+    except Exception as e:
+        logging.error(e)
+    return data
+
+
+@app.route("/sign", methods=["POST"])
+def signer(data: bytes):
+    data = request.get_data()
+    if private_key:
+        return sign_ps256(data, private_key)
+    else:
+        sign(data)
+

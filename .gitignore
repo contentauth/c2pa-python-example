@@ -5,3 +5,6 @@ kms-signing.crt
 kms-signing.csr
 rootCA.crt
 rootCA.key
+target/
+c2pa-env/
+.DS_Store
