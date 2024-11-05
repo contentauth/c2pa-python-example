@@ -7,4 +7,5 @@ rootCA.crt
 rootCA.key
 target/
 c2pa-env/
+.env
 .DS_Store
