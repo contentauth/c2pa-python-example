@@ -1,0 +1,23 @@
+- Start localstack (-d for detached mode)
+localstack start -d
+
+/!\ Anything configured in localstack by default is transient, and will be lost on restart/reboot.
+
+- Activate the local venv
+source c2pa-env/bin/activate
+
+- Install `awslocal` if not available (preferrably in venv)
+
+- Create a test user
+awslocal iam create-user --user-name test
+- Get the test user's access key
+awslocal iam create-access-key --user-name test
+
+Keep the result logged in the CLI, as they will help to set the proper env vars.
+The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID`.
+The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY`.
+
+Additional doc for localstack user creation: https://docs.localstack.cloud/user-guide/aws/iam/
+
+- Then you can run the setup script: python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo'
+(This will create two files that are "gitignored": `config.json` and `kms-signing.csr`).
