@@ -21,7 +21,7 @@ from c2pa import *
 from hashlib import sha256
 
 
-# Load env conf values
+# Load env conf values from .env file
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
 run_mode = app_config['RUN_MODE']
@@ -35,22 +35,24 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 
+# Loads env vars with a given prefix into APP config
+# By default, env vars with the `FLASK_`` prefix
 app.config.from_prefixed_env()
 
+# Load KMS key ID from local env
+# `create_kms_key` from the setup.py script created a key
+# with key spec ECC_NIST_P256
+kms_key_id = app.config["KMS_KEY_ID"]
+# Load the certificate chain from local env (chain.pem file)
+cert_chain_path = app.config["CERT_CHAIN_PATH"]
+# Open certificate chain path file
+cert_chain = open(cert_chain_path, "rb").read()
 
-if "KMS_KEY_ID" not in app.config:
-    # local test certs for development
-    private_key = open("tests/certs/ps256.pem","rb").read()
-    cert_chain = open("tests/certs/ps256.pub","rb").read()
-else:  
-    kms_key_id = app.config["KMS_KEY_ID"]
-    cert_chain_path = app.config["CERT_CHAIN_PATH"]
-
-    cert_chain = open(cert_chain_path, "rb").read()
+# TODO: figure out private_key val
 
 if run_mode == 'DEV':
     endpoint_url = app_config['AWS_ENDPOINT']
-    print(f'Running example in dev mode with endpoint: {endpoint_url}')
+    print(f'Running example in AWS dev mode with endpoint: {endpoint_url}')
     region = app_config['REGION']
     aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
     aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
@@ -66,11 +68,20 @@ else:
     session = boto3.Session()
     kms = session.client('kms')
 
-    
-print("Using KMS key: " + kms_key_id)
+
+print("Using KMS key with ID: " + kms_key_id)
 print("Using certificate chain: " + cert_chain_path)
 
+private_key = open(cert_chain_path, "rb").read()
+print("Private key loaded into memory")
 
+
+def sign(data: bytes) -> bytes:
+    hashed_data = sha256(data).digest()
+    return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
+
+
+# API Routes
 @app.route("/attach", methods=["POST"])
 def resize():
     request_data = request.get_data()
@@ -80,7 +91,7 @@ def resize():
         "format": "image/jpeg",
         "claim_generator_info": [
             {
-                "name": "c2pa test",
+                "name": "c2pa python example test",
                 "version": "0.0.1"
             }
         ],
@@ -104,18 +115,16 @@ def resize():
 
     builder = Builder(manifest)
 
-    signer = create_signer(sign, SigningAlg.ES256,
-                           cert_chain, "http://timestamp.digicert.com")
+    signer = create_signer(sign,
+                            SigningAlg.ES256,
+                            cert_chain,
+                            "http://timestamp.digicert.com")
 
     result = io.BytesIO(b"")
     builder.sign(signer, "image/jpeg", io.BytesIO(request_data), result)
 
     return result.getvalue()
 
-
-def sign(data: bytes) -> bytes:
-    hashed_data = sha256(data).digest()
-    return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
 
 @app.route("/signer_data", methods=["GET"])
@@ -134,10 +143,21 @@ def signer_data():
 
 
 @app.route("/sign", methods=["POST"])
-def signer(data: bytes):
+def signer():
+    print("## Signer called")
     data = request.get_data()
-    if private_key:
-        return sign_ps256(data, private_key)
-    else:
-        sign(data)
+    print("## Read request data")
 
+    try:
+      if private_key:
+          print("Using private key for signing")
+          return sign_ps256(data, private_key)
+      else:
+          print("Using KMS for signing")
+          sign(data)
+    except Exception as e:
+        logging.error(e)
+
+    # result placeholder
+    result = io.BytesIO(b"")
+    return result.getvalue()
