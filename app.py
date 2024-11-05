@@ -77,7 +77,19 @@ print("Private key loaded into memory")
 def sign(data: bytes) -> bytes:
     print(f"Signing data using KMS key id {kms_key_id}")
     hashed_data = sha256(data).digest()
-    return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
+
+    result = kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")
+    # Response syntax
+    # {
+    # 'KeyId': 'string',
+    #
+    # The signature value is a DER-encoded object as defined by ANSI X9.62–2005 and RFC 3279 Section 2.2.3.
+    # When you use the HTTP API or the Amazon Web Services CLI, the signature value is Base64-encoded.
+    # 'Signature': b'bytes',
+    #
+    # 'SigningAlgorithm': 'ECDSA_SHA_256'
+    # }
+    return result["Signature"]
 
 
 # API Routes

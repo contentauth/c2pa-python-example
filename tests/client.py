@@ -38,7 +38,7 @@ def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
         sign = lambda data: requests.post(json_data["signing_url"], data=data).content
     else:
         raise ValueError(f"Failed to get signer data: {response.status_code}")
-    
+
     sign = lambda data: requests.post(json_data["signing_url"], data=data).content
 
     return c2pa.create_signer(sign, alg, certs, json_data["timestamp_url"])
