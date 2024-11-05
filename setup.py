@@ -39,8 +39,9 @@ config_file = 'config.json'
 
 
 if run_mode == 'DEV':
-    # Run in dev/local mode (uses localstack)
+    # Run in dev/local mode (by default expects localstack running locally too)
     endpoint_url = app_config['AWS_ENDPOINT']
+    print(f'Running example in dev mode with endpoint: {endpoint_url}')
     region = app_config['REGION']
     aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
     aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
