@@ -43,7 +43,10 @@ config_file = 'config.json'
 
 print("## Using endpoint: ", endpoint_url)
 
-kms = boto3.client('kms', endpoint_url=endpoint_url, region_name=region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+if run_mode == 'DEV':
+    kms = boto3.client('kms', endpoint_url=endpoint_url, region_name=region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+else:
+    kms = boto3.client('kms')
 
 def create_kms_key():
     response = kms.create_key(
@@ -70,14 +73,11 @@ def create_key_and_csr(subject):
 
 @arguably.command
 def generate_certificate_request(kms_key: str, subject: str):
-
     key_obj = kms.describe_key(KeyId=kms_key)
-    print(key_obj)
+    # print(key_obj)
 
     # Get public key from KMS
     response = kms.get_public_key(KeyId=kms_key)
-
-    print(response)
 
     pubkey_der = response['PublicKey']
 
