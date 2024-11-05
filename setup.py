@@ -27,6 +27,7 @@ from dotenv import dotenv_values
 app_config = dotenv_values(".env")
 run_mode = app_config['RUN_MODE']
 
+# Set constants
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
 end_marker = '-----END CERTIFICATE REQUEST-----'
 hash_alg = 'ECDSA_SHA_256'
@@ -45,7 +46,11 @@ if run_mode == 'DEV':
     region = app_config['REGION']
     aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
     aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
-    kms = boto3.client('kms', endpoint_url=endpoint_url, region_name=region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    kms = boto3.client('kms',
+                        endpoint_url=endpoint_url,
+                        region_name=region,
+                        aws_access_key_id=aws_access_key_id,
+                        aws_secret_access_key=aws_secret_access_key)
 else:
     kms = boto3.client('kms')
 
