@@ -35,7 +35,6 @@ def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
             alg = getattr(c2pa.SigningAlg, alg_str)
         except AttributeError:
             raise ValueError(f"Unsupported signing algorithm: {alg_str}")
-        sign = lambda data: requests.post(json_data["signing_url"], data=data).content
     else:
         raise ValueError(f"Failed to get signer data: {response.status_code}")
     

@@ -16,6 +16,7 @@ import json
 import io
 import boto3
 import base64
+import dotenv
 
 from c2pa import *
 from hashlib import sha256
@@ -24,7 +25,7 @@ from hashlib import sha256
 # Load env conf values
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
-run_mode = app_config['RUN_MODE']
+
 
 
 # Configure logging
@@ -47,28 +48,30 @@ else:
     cert_chain_path = app.config["CERT_CHAIN_PATH"]
 
     cert_chain = open(cert_chain_path, "rb").read()
+    
+    run_mode = app_config['RUN_MODE']
 
-if run_mode == 'DEV':
-    endpoint_url = app_config['AWS_ENDPOINT']
-    print(f'Running example in dev mode with endpoint: {endpoint_url}')
-    region = app_config['REGION']
-    aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
-    aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
-    session = boto3.Session(region_name=region,
+    if run_mode == 'DEV':
+        endpoint_url = app_config['AWS_ENDPOINT']
+        print(f'Running example in dev mode with endpoint: {endpoint_url}')
+        region = app_config['REGION']
+        aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
+        aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
+        session = boto3.Session(region_name=region,
+                                aws_access_key_id=aws_access_key_id,
+                                aws_secret_access_key=aws_secret_access_key)
+        kms = session.client('kms',
+                            endpoint_url=endpoint_url,
+                            region_name=region,
                             aws_access_key_id=aws_access_key_id,
                             aws_secret_access_key=aws_secret_access_key)
-    kms = session.client('kms',
-                        endpoint_url=endpoint_url,
-                        region_name=region,
-                        aws_access_key_id=aws_access_key_id,
-                        aws_secret_access_key=aws_secret_access_key)
-else:
-    session = boto3.Session()
-    kms = session.client('kms')
+    else:
+        session = boto3.Session()
+        kms = session.client('kms')
 
     
-print("Using KMS key: " + kms_key_id)
-print("Using certificate chain: " + cert_chain_path)
+    print("Using KMS key: " + kms_key_id)
+    print("Using certificate chain: " + cert_chain_path)
 
 
 @app.route("/attach", methods=["POST"])
@@ -135,6 +138,7 @@ def signer_data():
 
 @app.route("/sign", methods=["POST"])
 def signer(data: bytes):
+    logging.info("Signing data")
     data = request.get_data()
     if private_key:
         return sign_ps256(data, private_key)
