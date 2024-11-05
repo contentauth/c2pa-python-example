@@ -54,7 +54,6 @@ def create_kms_key():
         Description='C2PA Python KMS Demo Key',
         KeyUsage='SIGN_VERIFY',
         KeySpec='ECC_NIST_P256',
-        MultiRegion=False
     )
 
     key_id = response['KeyMetadata']['KeyId']
