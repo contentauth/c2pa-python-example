@@ -18,7 +18,7 @@ You sign the CSR with your private key; this proves to the CA that you have cont
 
 To build and run this app, you must install:
 
-- Python 3.10.
+- Python 3.10 or Python 3.12.
 - OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
 
 If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. If you prefer to run everything locally instead, you can follow the steps for [LocalStack](https://www.localstack.cloud/) setup to run the example on your machine without accessing a real AWS environment.
@@ -211,8 +211,11 @@ When purchasing a certificate and key, you might be able to simply click a "Buy"
 If you use the CSR you generated in the previous step to purchase a certificate from a CA, the CSR is just an unsigned certificate that is the template for the final certificate.  The CA will take the CSR and create a new certificate with the same parameters and sign it with their root certificate, which makes it a "real" certificate.
 
 The process is different for each CA (links below are to [Digicert](https://www.digicert.com), but there are [many other CAs](https://opensource.contentauthenticity.org/docs/getting-started#getting-a-security-certificate)).  Additionally, CAs offer a variety of different kinds of certificates and levels of vetting and validation:
+
 - The simplest and least expensive option is an [S/MIME email certificate](https://www.digicert.com/tls-ssl/compare-secure-email-smime-certificates).
 - Other options, such as [document signing certificate](https://www.digicert.com/signing/compare-document-signing-certificates) require more rigor (like proving your identity) and cost more.
+
+### For development: Using self-signed certificates
 
 For testing and demonstration purposes, you can create a self-signed certificate for use as a root CA. The resulting manifests won't be trusted, but you can use it to run the application to see how it works before purchasing a real certificate from a CA.
 
@@ -302,7 +305,7 @@ Create certificate chain file PEM with certificate issued by CA and CA Root cert
 cat kms-signing.crt rootCA.crt > chain.pem
 ```
 
-By default, when this command is run from the root of this repository, this will place the certificate chain in the root of this repository (file named `chain.pem`). Note that this `chain.pem` file is a chain of certificates (not a signing key).
+By default, when this command is run from the root of this repository, this will place the certificate chain in the root of this repository (file named `chain.pem`). As a reminder, this `chain.pem` file is a chain of certificates (and not a signing key).
 
 ## Run the application
 
