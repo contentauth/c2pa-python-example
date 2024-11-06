@@ -31,7 +31,7 @@ Open a terminal window and follow these steps:
 
 1. Set up [virtual environment](https://docs.python.org/3/library/venv.html) by entering these commands:
 
-    ```sh
+    ```shell
     python -m venv c2pa-env
     source c2pa-env/bin/activate
     ```
@@ -39,14 +39,14 @@ Open a terminal window and follow these steps:
     In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.
 1. Install dependencies:
 
-    ```sh
+    ```shell
     cd c2pa-python-example
     pip install -r requirements.txt
     ```
 
     You will see this output in the terminal:
 
-    ```sh
+    ```shell
     Collecting c2pa-python==0.5.0
     ...
     ```
@@ -58,6 +58,7 @@ Open a terminal window and follow these steps:
 You must have an AWS account and be able to get standard AWS access credentials so you can use KMS.
 
 Follow the AWS documentation to [Configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) and add AWS credentials to `$HOME/.aws/credentials` as follows (key and token values not shown):
+
 ```
 [default]
 region=us-east-1
@@ -76,7 +77,7 @@ This setup is only recommended for development.
 
 Once LocalStack is installed, open a shell window and start the LocalStack stack in detached mode:
 
-```sh
+```shell
 localstack start -d
 ```
 
@@ -87,36 +88,36 @@ To facilitate interacting with Localstack, you may want to install the CLI tool 
 
 To install `awslocal` into your local virtual environment for this example, make sure your Python virtualenv is activated and run:
 
-```sh
+```shell
 pip install awscli-local
 ```
 
-#### Creating an environment file
+#### Creating an environment file for use with LocalStack setup
 
 When LocalStack is in use, the example's code will rely on environment variables to get credentials and find the (LocalStack) endpoint to use. Therefore, we need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env). The content of your `.env` file will be automatically read by the setup script and the Flask app so they can be reused there.
 
 The environment file contains following values:
 
-- Default `RUN_MODE` will be `DEV` for development mode.
-- `AWS_ENDPOINT` correspond to the AWS endpoint to use. With LocalStack, it corresponds to the endpoint the tool is listening to.
+- Default `RUN_MODE` will be `DEV` for development mode (only mode supported currently with LocalStack).
+- `AWS_ENDPOINT` correspond to the AWS endpoint to use. With LocalStack, this is the endpoint the tool is listening to intercept AWS interactions.
 - `REGION` is the default AWS region to use. This should be a valid region name.
-- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are credentials.
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are user credentials.
 
 For our example, we will create a test user and use that test user's credentials for signing.
 
 To do so, with LocalStack running, run the following command to create a user named `test`:
 
-```sh
+```shell
 awslocal iam create-user --user-name test
 ```
 
 Then, you need to recover the credentials for that user by running
 
-```sh
+```shell
 awslocal iam create-access-key --user-name test
 ```
 
-The command will log a result to your shell. The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID` in the `.env` file. The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY` in the `.env` file.
+The command will log a result to your terminal. The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID` in the `.env` file at the root of this repository. The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY` in the `.env` file.
 
 Additional documentation regarding Identity and Access Management (IAM) with LocalStack can be found in the [official LocalStack doc](https://docs.localstack.cloud/user-guide/aws/iam/).
 
@@ -129,15 +130,20 @@ NOTE: Amazon KMS uses Distinguished Encoding Rules (DER) encoding for cryptograp
 If you have an existing KMS key that you want to use for signing, follow these steps to generate a CSR:
 
 1. Set the KMS_KEY_ID environment variable to the value of the KMS key; for example:
-    ```
+
+    ```shell
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
-1. Then run this command to generate a certificate request
+
+2. Then run this command to generate a certificate request
+
     ```shell
     python setup.py generate-certificate-request {KMS_KEY_ID} {CSR_SUBJECT}
     ```
+
     For example:
-    ```
+
+    ```shell
     python setup.py generate-certificate-request \
     arn:aws:kms:us-east-1:12312323:key/123-123-123-8b8b-123 \
     "C=US,ST=NY,L=NeW York,O=EXACT ORGANIZATION NAME,CN=EXACT ORGANIZATION NAME"
@@ -148,22 +154,29 @@ If you have an existing KMS key that you want to use for signing, follow these s
 If you don't have an existing KMS key, follow these steps to generate a KMS key and CSR:
 
 1. Enter this command to create a KMS key and generate a CSR:
+
     ```shell
     python setup.py create-key-and-csr {CSR_SUBJECT}
     ```
+
     Where `{CSR_SUBJECT}` is an [RFC 4514](https://datatracker.ietf.org/doc/html/rfc4514.html) string representation of a distinguished name (DN) identifying the applicant.
     For example:
-    ```
+
+    ```shell
     python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo'
     ```
+
     You'll see a response like this:
-    ```
+
+    ```shell
     Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
     Consider setting an environment variable:
     `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
+
 1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
-    ```
+
+    ```shell
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
 
@@ -174,7 +187,7 @@ When purchasing a certificate and key, you might be able to simply click a "Buy"
 If you use the CSR you generated in the previous step to purchase a certificate from a CA, the CSR is just an unsigned certificate that is the template for the final certificate.  The CA will take the CSR and create a new certificate with the same parameters and sign it with their root certificate, which makes it a "real" certificate.
 
 The process is different for each CA (links below are to [Digicert](https://www.digicert.com), but there are [many other CAs](https://opensource.contentauthenticity.org/docs/getting-started#getting-a-security-certificate)).  Additionally, CAs offer a variety of different kinds of certificates and levels of vetting and validation:
-- The simplest and least expensive option is an [S/MIME email certificate](https://www.digicert.com/tls-ssl/compare-secure-email-smime-certificates).  
+- The simplest and least expensive option is an [S/MIME email certificate](https://www.digicert.com/tls-ssl/compare-secure-email-smime-certificates).
 - Other options, such as [document signing certificate](https://www.digicert.com/signing/compare-document-signing-certificates) require more rigor (like proving your identity) and cost more.
 
 For testing and demonstration purposes, you can create a self-signed certificate for use as a root CA. The resulting manifests won't be trusted, but you can use it to run the application to see how it works before purchasing a real certificate from a CA.
@@ -182,16 +195,20 @@ For testing and demonstration purposes, you can create a self-signed certificate
 Follow these steps:
 
 1. Enter this OpenSSL command:
-    ```
+
+    ```shell
     openssl req -x509 \
     -days 1825 \
     -newkey rsa:2048 \
     -keyout rootCA.key \
     -out rootCA.crt
     ```
+
     This command creates a temporary test root CA key/certificate.  For a detailed explanation, [see below](#understanding-the-openssl-commands).
+
 1. You'll be prompted to enter and confirm a PEM passphrase.  Then you'll see a message like this.  Respond to the prompts to provide the required information:
-    ```
+
+    ```shell
     You are about to be asked to enter information that will be incorporated
     into your certificate request.
     What you are about to enter is what is called a Distinguished Name or a DN.
@@ -207,6 +224,7 @@ Follow these steps:
     Common Name (e.g. server FQDN or YOUR name) []: ...
     Email Address []: ...
     ```
+
 1. Enter this command to sign the CSR with the temporary test CA key:
     ```
     openssl x509 -req \
