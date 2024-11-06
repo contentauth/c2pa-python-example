@@ -73,7 +73,7 @@ aws_session_token=...
 
 This setup is only recommended for development.
 
-[LocalStack](https://www.localstack.cloud/) is a set of tools that will enable you to run this example on your local machine. To install LocalStack, follow the [installation instruction](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+[LocalStack](https://www.localstack.cloud/) is a set of tools that will enable you to run this example on your local machine. To install LocalStack, follow the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
 
 Once LocalStack is installed, open a shell window and start the LocalStack stack in detached mode:
 
@@ -85,6 +85,12 @@ Make sure to keep LocalStack running while you work through this example.
 Warning: Anything configured in LocalStack by default is transient, and will be lost on restart/reboot of that tool.
 
 To facilitate interacting with Localstack, you may want to install the CLI tool `awslocal`. `awslocal` is a LocalStack AWS CLI, that substitutes itself to the `aws` CLI when you have LocalStack running. Detailed installation instruction are found [here](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
+
+As `awslocal` is a wrapper around the aws cli, you need the awscli package installed first:
+
+```shell
+pip install awscli
+```
 
 To install `awslocal` into your local virtual environment for this example, make sure your Python virtualenv is activated and run:
 
@@ -123,7 +129,7 @@ The command will log a result to your terminal that shoul look like this:
 {
     "AccessKey": {
         "UserName": "test",
-        "AccessKeyId": "AWS_ACCESS_KEY_ID",
+        "AccessKeyId": "LK_AWS_ACCESS_KEY_ID",
         "Status": "Active",
         "SecretAccessKey": "AWS_SECRET_ACCESS_KEY",
         "CreateDate": "2024-11-06T00:20:30Z"
@@ -190,6 +196,8 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
 
+    By default, when the setup.py script command is run from the root of this repository, this will create a file name `kms-signing.csr` at the root of the repository.
+
 1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
 
     ```shell
@@ -220,7 +228,7 @@ Follow these steps:
     -out rootCA.crt
     ```
 
-    This command creates a temporary test root CA key/certificate.  For a detailed explanation, [see below](#understanding-the-openssl-commands).
+    This command creates a set of temporary test root CA key and certificate. By default, when this command is run from the root of this repository, you will see two files appear in the repository root: `rootCA.crt` and `rootCA.key`). For a detailed explanation of the command, [see below](#understanding-the-openssl-commands).
 
 1. You'll be prompted to enter and confirm a PEM passphrase.  Then you'll see a message like this.  Respond to the prompts to provide the required information:
 
@@ -293,6 +301,8 @@ Create certificate chain file PEM with certificate issued by CA and CA Root cert
 ```shell
 cat kms-signing.crt rootCA.crt > chain.pem
 ```
+
+By default, when this command is run from the root of this repository, this will place the certificate chain in the root of this repository (file named `chain.pem`). Note that this `chain.pem` file is a chain of certificates (not a signing key).
 
 ## Run the application
 
