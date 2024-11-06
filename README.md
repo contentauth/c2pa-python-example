@@ -82,17 +82,17 @@ localstack start -d
 ```
 
 Make sure to keep LocalStack running while you work through this example.
-Warning: Anything configured in LocalStack by default is transient, and will be lost on restart/reboot of that tool.
+Warning: Anything configured in LocalStack by default is transient, and will be lost on restart/reboot of the LocalStack container.
 
-To facilitate interacting with Localstack, you may want to install the CLI tool `awslocal`. `awslocal` is a LocalStack AWS CLI, that substitutes itself to the `aws` CLI when you have LocalStack running. Detailed installation instruction are found [here](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
+To facilitate interacting with LocalStack, you may want to install the CLI tool `awslocal`. `awslocal` is a LocalStack AWS CLI, that substitutes itself to the `aws` CLI while you have LocalStack running. Detailed installation instruction are found [here](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
 
-As `awslocal` is a wrapper around the aws cli, you need the awscli package installed first:
+As `awslocal` is a wrapper around the `aws` cli, you need the `awscli` package installed first. Make sure your Python virtual environment is activated and run the install command:
 
 ```shell
 pip install awscli
 ```
 
-To install `awslocal` into your local virtual environment for this example, make sure your Python virtualenv is activated and run:
+To install `awslocal` into your local virtual environment for this example, make sure your Python virtual environment is activated and run:
 
 ```shell
 pip install awscli-local
