@@ -4,7 +4,7 @@
 
 [This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple application that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
 
-The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS. 
+The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS.
 During development and testing, you can also use [LocalStack](https://www.localstack.cloud/) to run a localized environment that simulates interactions with AWS.
 
 ### About CSRs

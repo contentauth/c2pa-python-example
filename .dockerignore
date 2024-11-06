@@ -1,0 +1,8 @@
+.gitigonre
+*.md
+docker-compose.yml
+example-env.env
+LICENSE
+README.md
+*.txt
+!requirements.txt
