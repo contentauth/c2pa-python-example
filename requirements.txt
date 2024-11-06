@@ -11,4 +11,4 @@ python-dotenv==1.0.1
 boto3
 requests
 pillow
-
+flask_cors

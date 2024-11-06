@@ -30,17 +30,28 @@ def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
         certs = json_data["cert_chain"]
         # Convert certs string to bytes using UTF-8 encoding
         certs = base64.b64decode(certs.encode("utf-8"))
+        cert_chain = open("tests/certs/ps256.pub","rb").read()
+        assert certs == cert_chain
         alg_str = json_data["alg"].upper()
         try:
             alg = getattr(c2pa.SigningAlg, alg_str)
         except AttributeError:
             raise ValueError(f"Unsupported signing algorithm: {alg_str}")
     else:
-        raise ValueError(f"Failed to get signer data: {response.status_code}")
+        raise ValueError(f"Failed to get signer data: {response.status_code} {response.text}")
     
-    sign = lambda data: requests.post(json_data["signing_url"], data=data).content
+    #sign = lambda data: requests.post(json_data["signing_url"], data=data).content
+    def remote_sign(data):
+        try:
+            response = requests.post(json_data["signing_url"], data=data)
+            response.raise_for_status()
+            return response.content
+        except Exception as e:
+            print(f"Error during signing: {e}")
+            print(f"Response: {response.text}")
+            raise
 
-    return c2pa.create_signer(sign, alg, certs, json_data["timestamp_url"])
+    return c2pa.create_signer(remote_sign, alg, certs, json_data["timestamp_url"])
 
 # Generate a thumbnail from a file
 def make_thumbnail(file: str) -> io.BytesIO:

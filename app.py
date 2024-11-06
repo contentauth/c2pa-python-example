@@ -10,13 +10,14 @@
 # specific language governing permissions and limitations under
 # each license.
 
-from flask import Flask, request
+from flask import Flask, request, abort
 import logging
 import json
 import io
 import boto3
 import base64
 import dotenv
+from flask_cors import CORS
 
 from c2pa import *
 from hashlib import sha256
@@ -36,13 +37,11 @@ logging.basicConfig(level=logging.INFO)
 
 # Run Flask app
 app = Flask(__name__)
-
+CORS(app) 
 
 # Load env vars with a given prefix into APP config
 # By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
-
-
 
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
@@ -118,7 +117,7 @@ def resize():
     try:
       builder = Builder(manifest)
 
-      signer = create_signer(sign, SigningAlg.ES256,
+      signer = create_signer(kms_sign, SigningAlg.ES256,
                             cert_chain, "http://timestamp.digicert.com")
 
       result = io.BytesIO(b"")
@@ -130,35 +129,42 @@ def resize():
         return "Error"
 
 
-def sign(data: bytes) -> bytes:
+# Uses KMS to sign
+def kms_sign(data: bytes) -> bytes:
     hashed_data = sha256(data).digest()
-    # Uses KMS to sign
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
 
 @app.route("/signer_data", methods=["GET"])
+
 def signer_data():
     logging.info("Getting signer data")
     try:
+        chain = base64.b64encode(cert_chain).decode("utf-8")
         data = json.dumps({
-            "alg": "Ps256",
+            "alg": "PS256",
             "timestamp_url": "http://timestamp.digicert.com",
-            "signing_url": "http://localhost:5000/sign",
-            "cert_chain": base64.b64encode(cert_chain).decode('utf-8'),
+            "signing_url": "http://127.0.0.1:5000/sign",
+            "cert_chain": chain
         })
     except Exception as e:
         logging.error(e)
+        abort(500, description=e)
     return data
 
 
 @app.route("/sign", methods=["POST"])
-def signer(data: bytes):
+def sign():
     logging.info("Signing data")
-    data = request.get_data()
-    if private_key:
-        return sign_ps256(data, private_key)
-    else:
-        sign(data)
+    try:
+        data = request.get_data()
+        if private_key:
+            return sign_ps256(data, private_key)
+        else:
+            return kms_sign(data)
+    except Exception as e:
+        logging.error(e)
+        abort(500, description=e)
 
 
 if __name__ == '__main__':
