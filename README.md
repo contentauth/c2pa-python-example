@@ -67,7 +67,7 @@ aws_secret_access_key=...
 aws_session_token=...
 ```
 
-### Set up using LocalStack
+### Using LocalStack
 
 #### Set up the LocalStack environment
 
@@ -98,7 +98,7 @@ To install `awslocal` into your local virtual environment for this example, make
 pip install awscli-local
 ```
 
-#### Creating an environment file for use with LocalStack setup
+#### Creating an environment file
 
 When LocalStack is in use, the example's code will rely on environment variables to get credentials and find the (LocalStack) endpoint to use. Therefore, we need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env). The content of your `.env` file will be automatically read by the setup script and the Flask app so they can be reused there.
 
@@ -123,7 +123,7 @@ Then, you need to recover the credentials for that user by running
 awslocal iam create-access-key --user-name test
 ```
 
-The command will log a result to your terminal that shoul look like this:
+The command displays the following output to the terminal:
 
 ```json
 {
