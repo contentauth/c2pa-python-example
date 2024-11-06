@@ -36,19 +36,23 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 
-app.config.from_prefixed_env()
+# app.config.from_prefixed_env()
 
 
-if "KMS_KEY_ID" not in app.config:
+if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
+    print("## Using local test certs")
+
     private_key = open("tests/certs/ps256.pem","rb").read()
     cert_chain = open("tests/certs/ps256.pub","rb").read()
-else:  
-    kms_key_id = app.config["KMS_KEY_ID"]
-    cert_chain_path = app.config["CERT_CHAIN_PATH"]
+else:
+    print("## Using KMS")
+
+    kms_key_id = app_config["KMS_KEY_ID"]
+    cert_chain_path = app_config["CERT_CHAIN_PATH"]
 
     cert_chain = open(cert_chain_path, "rb").read()
-    
+
     run_mode = app_config['RUN_MODE']
 
     if run_mode == 'DEV':
@@ -69,7 +73,7 @@ else:
         session = boto3.Session()
         kms = session.client('kms')
 
-    
+
     print("Using KMS key: " + kms_key_id)
     print("Using certificate chain: " + cert_chain_path)
 
@@ -105,16 +109,19 @@ def resize():
         ]
     })
 
-    builder = Builder(manifest)
+    try:
+      builder = Builder(manifest)
 
-    signer = create_signer(sign, SigningAlg.ES256,
-                           cert_chain, "http://timestamp.digicert.com")
+      signer = create_signer(sign, SigningAlg.ES256,
+                            cert_chain, "http://timestamp.digicert.com")
 
-    result = io.BytesIO(b"")
-    builder.sign(signer, "image/jpeg", io.BytesIO(request_data), result)
+      result = io.BytesIO(b"")
+      builder.sign(signer, "image/jpeg", io.BytesIO(request_data), result)
 
-    return result.getvalue()
-
+      return result.getvalue()
+    except Exception as e:
+        logging.error(e)
+        return "Error"
 
 def sign(data: bytes) -> bytes:
     hashed_data = sha256(data).digest()
@@ -145,3 +152,6 @@ def signer(data: bytes):
     else:
         sign(data)
 
+
+if __name__ == '__main__':
+    app.run(debug=True)
