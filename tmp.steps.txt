@@ -35,3 +35,4 @@ Make sure to grab the needed certificate KMS ID and set the value in your env fi
 
 - RUn a curl request to sign an image with test certificates using:
 curl -X POST -T "<PATH_TO_JPEG>" -o "<SIGNED_FILE_NAME>.jpg" 'http://localhost:5000/attach'
+Example: curl -X POST -T /Users/mathern/Desktop/temp/test.jpg -o /Users/mathern/Desktop/temp/test_signed.jpg 'http://localhost:5000/attach'
