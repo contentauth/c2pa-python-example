@@ -21,7 +21,7 @@ To build and run this app, you must install:
 - Python 3.10 or Python 3.12.
 - OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
 
-If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. If you prefer to run everything locally instead, you can follow the steps for [LocalStack](https://www.localstack.cloud/) setup to run the example on your machine without accessing a real AWS environment.
+If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. To run this example entirely locally for development and testing, follow the steps in [Using LocalStack](README.md#using-localstack) to setup and run a mock AWS environment runing locally.
 
 NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
 
@@ -100,7 +100,7 @@ pip install awscli-local
 
 #### Creating an environment file
 
-When LocalStack is in use, the example's code will rely on environment variables to get credentials and find the (LocalStack) endpoint to use. Therefore, we need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env). The content of your `.env` file will be automatically read by the setup script and the Flask app so they can be reused there.
+With LocalStack, the example uses environment variables to get credentials and the LocalStack endpoint to access. Therefore, you need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env) file. The content of your `.env` file will be automatically read by the setup script and the Flask app so they can be reused there.
 
 The environment file contains following values:
 
