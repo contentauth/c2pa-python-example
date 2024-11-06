@@ -67,9 +67,9 @@ aws_secret_access_key=...
 aws_session_token=...
 ```
 
-### Set up using Localstack
+### Set up using LocalStack
 
-#### Setting up the LocalStack environment
+#### Set up the LocalStack environment
 
 This setup is only recommended for development.
 
