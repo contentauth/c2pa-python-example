@@ -4,7 +4,8 @@
 
 [This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple application that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
 
-The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS. Note that this example can also run locally with [LocalStack](https://www.localstack.cloud/) used to simulate interactions with AWS.
+The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS. 
+During development and testing, you can also use [LocalStack](https://www.localstack.cloud/) to run a localized environment that simulates interactions with AWS.
 
 ### About CSRs
 
@@ -73,7 +74,9 @@ aws_session_token=...
 
 This setup is only recommended for development.
 
-[LocalStack](https://www.localstack.cloud/) is a set of tools that will enable you to run this example on your local machine. To install LocalStack, follow the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+[LocalStack](https://www.localstack.cloud/) enables you to run this example entirely on your local machine, simulating interactions with AWS. To install LocalStack, follow the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+
+#### Run LocalStack
 
 Once LocalStack is installed, open a shell window and start the LocalStack stack in detached mode:
 
@@ -82,46 +85,48 @@ localstack start -d
 ```
 
 Make sure to keep LocalStack running while you work through this example.
-Warning: Anything configured in LocalStack by default is transient, and will be lost on restart/reboot of the LocalStack container.
+Warning: Anything configured in LocalStack is transient, and will be lost on restart/reboot of the LocalStack container.
 
-To facilitate interacting with LocalStack, you may want to install the CLI tool `awslocal`. `awslocal` is a LocalStack AWS CLI, that substitutes itself to the `aws` CLI while you have LocalStack running. Detailed installation instruction are found [here](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
+#### Install awslocal CLI
 
-As `awslocal` is a wrapper around the `aws` cli, you need the `awscli` package installed first. Make sure your Python virtual environment is activated and run the install command:
+To facilitate interacting with LocalStack, install the CLI tool `awslocal` that substitutes for the `aws` CLI while LocalStack is running. For more information, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
 
-```shell
-pip install awscli
-```
+Follow these steps:
 
-To install `awslocal` into your local virtual environment for this example, make sure your Python virtual environment is activated and run:
+1. Ensure that you have activated your Python virtual environment.
+2. Since `awslocal` is a wrapper around the `aws` CLI, you need to install the `awscli` package first by entering this command:
+   ```shell
+    pip install awscli
+    ```
+3. Install `awslocal` into your local virtual environment by entering this command:
+    ```shell
+    pip install awscli-local
+    ```
 
-```shell
-pip install awscli-local
-```
+#### Create an environment file
 
-#### Creating an environment file
+The app uses environment variables to get credentials and the LocalStack endpoint to access. Therefore, you need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env) file. The setup script and the Flask app will then get the values from the `.env` file.
 
-With LocalStack, the example uses environment variables to get credentials and the LocalStack endpoint to access. Therefore, you need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env) file. The content of your `.env` file will be automatically read by the setup script and the Flask app so they can be reused there.
+The environment file contains these values:
 
-The environment file contains following values:
+- `RUN_MODE` will be `DEV` for development mode. This is the only mode that LocalStack supports.
+- `AWS_ENDPOINT` is to the AWS endpoint to use. With LocalStack, this is the endpoint on which the tool listens to intercept AWS interactions.
+- `REGION` is the default AWS region to use. This must be a valid region name.
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are AWS user credentials.
 
-- Default `RUN_MODE` will be `DEV` for development mode (only mode supported currently with LocalStack).
-- `AWS_ENDPOINT` correspond to the AWS endpoint to use. With LocalStack, this is the endpoint the tool is listening to intercept AWS interactions.
-- `REGION` is the default AWS region to use. This should be a valid region name.
-- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are user credentials.
+#### Create test user account
 
-For our example, we will create a test user and use that test user's credentials for signing.
+For our example, you will create a test user and use that account's credentials for signing.
 
-To do so, with LocalStack running, run the following command to create a user named `test`:
-
-```shell
-awslocal iam create-user --user-name test
-```
-
-Then, you need to recover the credentials for that user by running
-
-```shell
-awslocal iam create-access-key --user-name test
-```
+1. Ensure that LocalStack is running.
+2. Create a user named `test` by entering this command:
+    ```shell
+    awslocal iam create-user --user-name test
+    ```
+3. Recover the credentials for that user by entering this command:
+    ```shell
+    awslocal iam create-access-key --user-name test
+    ```
 
 The command displays the following output to the terminal:
 
@@ -137,11 +142,11 @@ The command displays the following output to the terminal:
 }
 ```
 
-The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID` in the `.env` file at the root of this repository.
+Confirm that:
+- The value of `AccessKeyId` shown is that of the environment variable `AWS_ACCESS_KEY_ID` in the `.env` file that you set previously.
+- The value of `SecretAccessKey` is that of the environment variable `AWS_SECRET_ACCESS_KEY` in the `.env` file that you set previously.
 
-The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY` in the `.env` file.
-
-Additional documentation regarding Identity and Access Management (IAM) with LocalStack can be found in the [official LocalStack doc](https://docs.localstack.cloud/user-guide/aws/iam/).
+For more information on identity and access management with LocalStack, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/aws/iam/).
 
 ## Get KMS key and CSR
 
