@@ -117,7 +117,23 @@ Then, you need to recover the credentials for that user by running
 awslocal iam create-access-key --user-name test
 ```
 
-The command will log a result to your terminal. The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID` in the `.env` file at the root of this repository. The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY` in the `.env` file.
+The command will log a result to your terminal that shoul look like this:
+
+```json
+{
+    "AccessKey": {
+        "UserName": "test",
+        "AccessKeyId": "AWS_ACCESS_KEY_ID",
+        "Status": "Active",
+        "SecretAccessKey": "AWS_SECRET_ACCESS_KEY",
+        "CreateDate": "2024-11-06T00:20:30Z"
+    }
+}
+```
+
+The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID` in the `.env` file at the root of this repository.
+
+The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY` in the `.env` file.
 
 Additional documentation regarding Identity and Access Management (IAM) with LocalStack can be found in the [official LocalStack doc](https://docs.localstack.cloud/user-guide/aws/iam/).
 
@@ -135,7 +151,7 @@ If you have an existing KMS key that you want to use for signing, follow these s
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
 
-2. Then run this command to generate a certificate request
+1. Then run this command to generate a certificate request
 
     ```shell
     python setup.py generate-certificate-request {KMS_KEY_ID} {CSR_SUBJECT}
@@ -226,7 +242,8 @@ Follow these steps:
     ```
 
 1. Enter this command to sign the CSR with the temporary test CA key:
-    ```
+
+    ```shell
     openssl x509 -req \
     -CA rootCA.crt \
     -CAkey rootCA.key \
@@ -235,10 +252,12 @@ Follow these steps:
     -days 365 \
     -copy_extensions copyall
     ```
+
     For a detailed explanation of the command, [see below](#understanding-the-openssl-commands).<br/>
     You'll be prompted for the passphrase you entered in the previous step.
     You'll see a response like this:
-    ```
+
+    ```shell
     Certificate request self-signature ok
     subject=O=C2PA Python Demo, CN=John Smith
     Enter pass phrase for rootCA.key:
@@ -271,38 +290,47 @@ The [`openssl x509 -req`](https://docs.openssl.org/master/man1/openssl-x509/) co
 
 Create certificate chain file PEM with certificate issued by CA and CA Root certificate. For example, with the self-signed certificate:
 
-```
+```shell
 cat kms-signing.crt rootCA.crt > chain.pem
 ```
 
-## Run the application 
+## Run the application
 
 1. Run the application by entering this command:
-    ```
+
+    ```shell
     FLASK_KMS_KEY_ID="$KMS_KEY_ID" FLASK_CERT_CHAIN_PATH="./chain.pem" flask run
     ```
+
     You'll see a response like this:
-    ```
+
+    ```shell
     Using KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
     Using certificate chain: ./chain.pem
     * Debug mode: off
-    WARNING: This is a development server. Do not use it in a production deployment. 
+    WARNING: This is a development server. Do not use it in a production deployment.
     Use a production WSGI server instead.
     * Running on http://127.0.0.1:5000
     Press CTRL+C to quit
     ```
+
 2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:
-    ```
+
+    ```shell
     curl -X POST -T "<PATH_TO_JPEG>" -o <SIGNED_FILE_NAME>.jpg 'http://localhost:5000/attach'
     ```
+
     For example:
+
+    ```shell
+    curl -X POST -T ~/Desktop/test.jpeg -o signed.jpeg 'http://localhost:5000/attach'
     ```
-    curl -X POST -T ~/Desktop/test.jpeg -o signed.jpeg 'http://localhost:5000/attach' 
-    ```
+
     In this example, the image with signed Content Credentials is saved to `signed.jpeg`.
 
 If you encounter any issues running the `curl` command, try using `127.0.0.1` instead of `localhost`.
 
 Confirm that the app signed the output image by doing one of these:
-- If you've installed C2PA Tool, run `c2patool <SIGNED_FILE_NAME>.jpg`.
+
+- If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
