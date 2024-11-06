@@ -29,3 +29,5 @@ Readme link: https://github.com/contentauth/c2pa-python-example?tab=readme-ov-fi
 - Continue with steps from https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#get-certificate
 
 - Continue with steps from https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#create-certificate-chain
+
+- Run the app using `python3 app.py`

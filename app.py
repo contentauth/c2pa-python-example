@@ -39,12 +39,11 @@ app = Flask(__name__)
 # By default, env vars with the `FLASK_`` prefix
 app.config.from_prefixed_env()
 
-# Load KMS key ID from local env
-# `create_kms_key` from the setup.py script created a key
-# with key spec ECC_NIST_P256
-kms_key_id = app.config["KMS_KEY_ID"]
-# Load the certificate chain from local env (chain.pem file)
-cert_chain_path = app.config["CERT_CHAIN_PATH"]
+# Load KMS key ID from env vars
+# `create_kms_key` from the setup.py script created a key with key spec ECC_NIST_P256
+kms_key_id = app_config["KMS_KEY_ID"]
+# Load the certificate chain from env vars (chain.pem file)
+cert_chain_path = app_config["CERT_CHAIN_PATH"]
 # Open certificate chain path file
 cert_chain = open(cert_chain_path, "rb").read()
 
@@ -167,3 +166,6 @@ def signer():
         logging.error(e)
 
     return result
+
+if __name__ == '__main__':
+    app.run(debug=True)
