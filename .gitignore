@@ -7,4 +7,5 @@ kms-signing.crt
 kms-signing.csr
 rootCA.crt
 rootCA.key
+target/
 .DS_Store
