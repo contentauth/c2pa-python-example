@@ -30,18 +30,23 @@ NOTE: This app was developed and tested on macOS. It should also work on other o
 Open a terminal window and follow these steps:
 
 1. Set up [virtual environment](https://docs.python.org/3/library/venv.html) by entering these commands:
-    ```
+
+    ```sh
     python -m venv c2pa-env
     source c2pa-env/bin/activate
     ```
+
     In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.
 1. Install dependencies:
-    ```
+
+    ```sh
     cd c2pa-python-example
     pip install -r requirements.txt
     ```
+
     You will see this output in the terminal:
-    ```
+
+    ```sh
     Collecting c2pa-python==0.5.0
     ...
     ```
