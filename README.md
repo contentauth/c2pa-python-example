@@ -1,18 +1,18 @@
 # C2PA Python example
 
-## Overview 
+## Overview
 
 [This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple application that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
 
-The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS.
+The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS. Note that this example can also run locally with [LocalStack](https://www.localstack.cloud/) used to simulate interactions with AWS.
 
 ### About CSRs
 
-In addition to being an example of using the Python library, this app shows how to generate a certificate signing request (CSR), a message sent to a certificate authority (CA) to request the signing of a public key and associated information. 
+In addition to being an example of using the Python library, this app shows how to generate a certificate signing request (CSR), a message sent to a certificate authority (CA) to request the signing of a public key and associated information.
 
-A CSR comprises a public key, as well as a common name, organization, city, state, country, and e-mail address. Not all of these fields are required and will vary depending with the assurance level of your certificate. 
+A CSR comprises a public key, as well as a common name, organization, city, state, country, and e-mail address. Not all of these fields are required and will vary depending with the assurance level of your certificate.
 
-You sign the CSR with your private key; this proves to the CA that you have control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the public key to indicate that it can be publicly trusted. 
+You sign the CSR with your private key; this proves to the CA that you have control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the public key to indicate that it can be publicly trusted.
 
 ## Prerequisites
 
