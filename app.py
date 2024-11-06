@@ -22,7 +22,8 @@ from c2pa import *
 from hashlib import sha256
 
 
-# Load env conf values
+
+# Load environment variable from .env file
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
 
@@ -32,11 +33,15 @@ app_config = dotenv_values(".env")
 logging.basicConfig(level=logging.INFO)
 
 
+
 # Run Flask app
 app = Flask(__name__)
 
 
+# Load env vars with a given prefix into APP config
+# By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
+
 
 
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
@@ -56,6 +61,7 @@ else:
     run_mode = app_config['RUN_MODE']
 
     if run_mode == 'DEV':
+        # For use with Localstack
         endpoint_url = app_config['AWS_ENDPOINT']
         print(f'Running example in dev mode with endpoint: {endpoint_url}')
         region = app_config['REGION']
@@ -123,8 +129,10 @@ def resize():
         logging.error(e)
         return "Error"
 
+
 def sign(data: bytes) -> bytes:
     hashed_data = sha256(data).digest()
+    # Uses KMS to sign
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
 
