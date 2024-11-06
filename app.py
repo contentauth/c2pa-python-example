@@ -42,7 +42,7 @@ app = Flask(__name__)
 # Load KMS key ID from .env file
 # `create_kms_key` from the setup.py script created a key with key spec ECC_NIST_P256
 kms_key_id = app_config["KMS_KEY_ID"]
-# Load the certificate chain from env vars (chain.pem file)
+# Load the certificate chain filepath from env vars (chain.pem file)
 cert_chain_path = app_config["CERT_CHAIN_PATH"]
 # Open certificate chain path file
 cert_chain = open(cert_chain_path, "rb").read()
