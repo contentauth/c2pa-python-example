@@ -39,6 +39,7 @@ app = Flask(__name__)
 # By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
 
+
 # Load KMS key ID from .env file
 # `create_kms_key` from the setup.py script created a key with key spec ECC_NIST_P256
 kms_key_id = app_config["KMS_KEY_ID"]
@@ -48,9 +49,9 @@ cert_chain_path = app_config["CERT_CHAIN_PATH"]
 cert_chain = open(cert_chain_path, "rb").read()
 
 if run_mode == 'DEV':
-    endpoint_url = app_config['AWS_ENDPOINT']
+    endpoint_url = app_config['AWS_ENDPOINT_URL']
     print(f'Running example in AWS dev mode with endpoint: {endpoint_url}')
-    region = app_config['REGION']
+    region = app_config['AWS_REGION']
     aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
     aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
     session = boto3.Session(region_name=region,

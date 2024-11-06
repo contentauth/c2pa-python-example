@@ -1,6 +1,6 @@
 # C2PA Python example
 
-## Overview 
+## Overview
 
 [This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple application that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
 
@@ -8,17 +8,17 @@ The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) 
 
 ### About CSRs
 
-In addition to being an example of using the Python library, this app shows how to generate a certificate signing request (CSR), a message sent to a certificate authority (CA) to request the signing of a public key and associated information. 
+In addition to being an example of using the Python library, this app shows how to generate a certificate signing request (CSR), a message sent to a certificate authority (CA) to request the signing of a public key and associated information.
 
-A CSR comprises a public key, as well as a common name, organization, city, state, country, and e-mail address. Not all of these fields are required and will vary depending with the assurance level of your certificate. 
+A CSR comprises a public key, as well as a common name, organization, city, state, country, and e-mail address. Not all of these fields are required and will vary depending with the assurance level of your certificate.
 
-You sign the CSR with your private key; this proves to the CA that you have control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the public key to indicate that it can be publicly trusted. 
+You sign the CSR with your private key; this proves to the CA that you have control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the public key to indicate that it can be publicly trusted.
 
 ## Prerequisites
 
 To build and run this app, you must install:
 
-- Python 3.10.
+- Python 3.12.
 - OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
 
 You must also have an AWS account and be able to get standard AWS access credentials so you can use KMS.
@@ -70,7 +70,7 @@ If you have an existing KMS key that you want to use for signing, follow these s
     ```
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
-1. Then run this command to generate a certificate request 
+1. Then run this command to generate a certificate request
     ```shell
     python setup.py generate-certificate-request {KMS_KEY_ID} {CSR_SUBJECT}
     ```
@@ -89,7 +89,7 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     ```shell
     python setup.py create-key-and-csr {CSR_SUBJECT}
     ```
-    Where `{CSR_SUBJECT}` is an [RFC 4514](https://datatracker.ietf.org/doc/html/rfc4514.html) string representation of a distinguished name (DN) identifying the applicant. 
+    Where `{CSR_SUBJECT}` is an [RFC 4514](https://datatracker.ietf.org/doc/html/rfc4514.html) string representation of a distinguished name (DN) identifying the applicant.
     For example:
     ```
     python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo'
@@ -97,7 +97,7 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     You'll see a response like this:
     ```
     Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Consider setting an environment variable: 
+    Consider setting an environment variable:
     `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
 1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
@@ -112,7 +112,7 @@ When purchasing a certificate and key, you might be able to simply click a "Buy"
 If you use the CSR you generated in the previous step to purchase a certificate from a CA, the CSR is just an unsigned certificate that is the template for the final certificate.  The CA will take the CSR and create a new certificate with the same parameters and sign it with their root certificate, which makes it a "real" certificate.
 
 The process is different for each CA (links below are to [Digicert](https://www.digicert.com), but there are [many other CAs](https://opensource.contentauthenticity.org/docs/getting-started#getting-a-security-certificate)).  Additionally, CAs offer a variety of different kinds of certificates and levels of vetting and validation:
-- The simplest and least expensive option is an [S/MIME email certificate](https://www.digicert.com/tls-ssl/compare-secure-email-smime-certificates).  
+- The simplest and least expensive option is an [S/MIME email certificate](https://www.digicert.com/tls-ssl/compare-secure-email-smime-certificates).
 - Other options, such as [document signing certificate](https://www.digicert.com/signing/compare-document-signing-certificates) require more rigor (like proving your identity) and cost more.
 
 For testing and demonstration purposes, you can create a self-signed certificate for use as a root CA. The resulting manifests won't be trusted, but you can use it to run the application to see how it works before purchasing a real certificate from a CA.
@@ -195,7 +195,7 @@ Create certificate chain file PEM with certificate issued by CA and CA Root cert
 cat kms-signing.crt rootCA.crt > chain.pem
 ```
 
-## Run the application 
+## Run the application
 
 1. Run the application by entering this command:
     ```
@@ -206,7 +206,7 @@ cat kms-signing.crt rootCA.crt > chain.pem
     Using KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
     Using certificate chain: ./chain.pem
     * Debug mode: off
-    WARNING: This is a development server. Do not use it in a production deployment. 
+    WARNING: This is a development server. Do not use it in a production deployment.
     Use a production WSGI server instead.
     * Running on http://127.0.0.1:5000
     Press CTRL+C to quit
@@ -217,7 +217,7 @@ cat kms-signing.crt rootCA.crt > chain.pem
     ```
     For example:
     ```
-    curl -X POST -T ~/Desktop/test.jpeg -o signed.jpeg 'http://localhost:5000/attach' 
+    curl -X POST -T ~/Desktop/test.jpeg -o signed.jpeg 'http://localhost:5000/attach'
     ```
     In this example, the image with signed Content Credentials is saved to `signed.jpeg`.
 

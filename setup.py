@@ -24,7 +24,7 @@ import json
 
 # Load env conf values
 from dotenv import dotenv_values
-app_config = dotenv_values(".env")
+app_config = dotenv_values(".env.local")
 run_mode = app_config['RUN_MODE']
 
 # Set constants
@@ -41,9 +41,9 @@ config_file = 'config.json'
 
 if run_mode == 'DEV':
     # Run in dev/local mode (by default expects localstack running locally too)
-    endpoint_url = app_config['AWS_ENDPOINT']
+    endpoint_url = app_config['AWS_ENDPOINT_URL']
     print(f'Running example in dev mode with endpoint: {endpoint_url}')
-    region = app_config['REGION']
+    region = app_config['AWS_REGION']
     aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
     aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
     kms = boto3.client('kms',
