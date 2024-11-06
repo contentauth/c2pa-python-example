@@ -5,19 +5,31 @@ import boto3
 import json
 import io
 
+
 # Load env conf values
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
 run_mode = app_config['RUN_MODE']
 
+
 # Run Flask app
 app = Flask(__name__)
 
+
+# Loads env vars with a given prefix into APP config
+# By default, env vars with the `FLASK_`` prefix
 app.config.from_prefixed_env()
+
+# Load KMS key ID from local env
+# `create_kms_key` from the setup.py script created a key
+# with key spec ECC_NIST_P256
 kms_key_id = app.config["KMS_KEY_ID"]
+
+# Load the certificate chain from local env (chain.pem file)
 cert_chain_path = app.config["CERT_CHAIN_PATH"]
 
 cert_chain = open(cert_chain_path, "rb").read()
+
 
 if run_mode == 'DEV':
     endpoint_url = app_config['AWS_ENDPOINT']
@@ -37,8 +49,10 @@ else:
     session = boto3.Session()
     kms = session.client('kms')
 
-print("Using KMS key: " + kms_key_id)
-print("Using certificate chain: " + cert_chain_path)
+
+print(f'Using KMS key: {kms_key_id}')
+print(f'Using certificate chain from {cert_chain_path}')
+
 
 @app.route("/attach", methods=["POST"])
 def resize():
@@ -73,6 +87,7 @@ def resize():
 
     builder = Builder(manifest)
 
+    # The signer is created with a certificate chain
     signer = create_signer(sign, SigningAlg.ES256,
                            cert_chain, "http://timestamp.digicert.com")
 
