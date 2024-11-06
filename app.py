@@ -37,7 +37,7 @@ app = Flask(__name__)
 
 # Loads env vars with a given prefix into APP config
 # By default, env vars with the `FLASK_`` prefix
-app.config.from_prefixed_env()
+# app.config.from_prefixed_env()
 
 # Load KMS key ID from env vars
 # `create_kms_key` from the setup.py script created a key with key spec ECC_NIST_P256

@@ -27,7 +27,11 @@ Readme link: https://github.com/contentauth/c2pa-python-example?tab=readme-ov-fi
 (This will create two files that are "gitignored": `config.json` and `kms-signing.csr`).
 
 - Continue with steps from https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#get-certificate
+Make sure to grab the needed certificate KMS ID and set the value in your env file.
 
 - Continue with steps from https://github.com/contentauth/c2pa-python-example?tab=readme-ov-file#create-certificate-chain
 
 - Run the app using `python3 app.py`
+
+- RUn a curl request to sign an image with test certificates using:
+curl -X POST -T "<PATH_TO_JPEG>" -o "<SIGNED_FILE_NAME>.jpg" 'http://localhost:5000/attach'
