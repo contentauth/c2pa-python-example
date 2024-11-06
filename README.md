@@ -21,7 +21,7 @@ To build and run this app, you must install:
 - Python 3.10.
 - OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
 
-You must also have an AWS account and be able to get standard AWS access credentials so you can use KMS.
+If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. If you prefer to run everything locally instead, you can follow the steps for [LocalStack](https://www.localstack.cloud/) setup to run the example on your machine without accessing a real AWS environment.
 
 NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
 
@@ -34,7 +34,7 @@ Open a terminal window and follow these steps:
     python -m venv c2pa-env
     source c2pa-env/bin/activate
     ```
-    In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.  
+    In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.
 1. Install dependencies:
     ```
     cd c2pa-python-example
@@ -46,8 +46,11 @@ Open a terminal window and follow these steps:
     ...
     ```
 
+## Setting up to run the example
 
- ## Set AWS credentials
+### Set up with AWS credentials
+
+You must have an AWS account and be able to get standard AWS access credentials so you can use KMS.
 
 Follow the AWS documentation to [Configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) and add AWS credentials to `$HOME/.aws/credentials` as follows (key and token values not shown):
 ```
@@ -57,6 +60,60 @@ aws_access_key_id=...
 aws_secret_access_key=...
 aws_session_token=...
 ```
+
+### Set up using Localstack
+
+#### Setting up the LocalStack environment
+
+This setup is only recommended for development.
+
+[LocalStack](https://www.localstack.cloud/) is a set of tools that will enable you to run this example on your local machine. To install LocalStack, follow the [installation instruction](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+
+Once LocalStack is installed, open a shell window and start the LocalStack stack in detached mode:
+
+```sh
+localstack start -d
+```
+
+Make sure to keep LocalStack running while you work through this example.
+Warning: Anything configured in LocalStack by default is transient, and will be lost on restart/reboot of that tool.
+
+To facilitate interacting with Localstack, you may want to install the CLI tool `awslocal`. `awslocal` is a LocalStack AWS CLI, that substitutes itself to the `aws` CLI when you have LocalStack running. Detailed installation instruction are found [here](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
+
+To install `awslocal` into your local virtual environment for this example, make sure your Python virtualenv is activated and run:
+
+```sh
+pip install awscli-local
+```
+
+#### Creating an environment file
+
+When LocalStack is in use, the example's code will rely on environment variables to get credentials and find the (LocalStack) endpoint to use. Therefore, we need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env). The content of your `.env` file will be automatically read by the setup script and the Flask app so they can be reused there.
+
+The environment file contains following values:
+
+- Default `RUN_MODE` will be `DEV` for development mode.
+- `AWS_ENDPOINT` correspond to the AWS endpoint to use. With LocalStack, it corresponds to the endpoint the tool is listening to.
+- `REGION` is the default AWS region to use. This should be a valid region name.
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are credentials.
+
+For our example, we will create a test user and use that test user's credentials for signing.
+
+To do so, with LocalStack running, run the following command to create a user named `test`:
+
+```sh
+awslocal iam create-user --user-name test
+```
+
+Then, you need to recover the credentials for that user by running
+
+```sh
+awslocal iam create-access-key --user-name test
+```
+
+The command will log a result to your shell. The result value `AccessKeyId` should be set to the env var `AWS_ACCESS_KEY_ID` in the `.env` file. The result value `SecretAccessKey` should be set to the env var `AWS_SECRET_ACCESS_KEY` in the `.env` file.
+
+Additional documentation regarding Identity and Access Management (IAM) with LocalStack can be found in the [official LocalStack doc](https://docs.localstack.cloud/user-guide/aws/iam/).
 
 ## Get KMS key and CSR
 
@@ -70,7 +127,7 @@ If you have an existing KMS key that you want to use for signing, follow these s
     ```
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
-1. Then run this command to generate a certificate request 
+1. Then run this command to generate a certificate request
     ```shell
     python setup.py generate-certificate-request {KMS_KEY_ID} {CSR_SUBJECT}
     ```
@@ -89,7 +146,7 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     ```shell
     python setup.py create-key-and-csr {CSR_SUBJECT}
     ```
-    Where `{CSR_SUBJECT}` is an [RFC 4514](https://datatracker.ietf.org/doc/html/rfc4514.html) string representation of a distinguished name (DN) identifying the applicant. 
+    Where `{CSR_SUBJECT}` is an [RFC 4514](https://datatracker.ietf.org/doc/html/rfc4514.html) string representation of a distinguished name (DN) identifying the applicant.
     For example:
     ```
     python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo'
@@ -97,7 +154,7 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     You'll see a response like this:
     ```
     Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Consider setting an environment variable: 
+    Consider setting an environment variable:
     `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
 1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
