@@ -22,10 +22,12 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from pathlib import Path
 import json
 
+
 # Load environment variable from .env file
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
 run_mode = app_config['RUN_MODE']
+
 
 # Set constants
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
