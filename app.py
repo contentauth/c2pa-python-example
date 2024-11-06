@@ -39,7 +39,7 @@ app = Flask(__name__)
 # By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
 
-# Load KMS key ID from env vars
+# Load KMS key ID from .env file
 # `create_kms_key` from the setup.py script created a key with key spec ECC_NIST_P256
 kms_key_id = app_config["KMS_KEY_ID"]
 # Load the certificate chain from env vars (chain.pem file)
