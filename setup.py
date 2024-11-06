@@ -22,10 +22,12 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from pathlib import Path
 import json
 
-# Load env conf values
+
+# Load environment variable from .env file
 from dotenv import dotenv_values
 app_config = dotenv_values(".env")
 run_mode = app_config['RUN_MODE']
+
 
 # Set constants
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
@@ -40,18 +42,22 @@ config_file = 'config.json'
 
 
 if run_mode == 'DEV':
-    # Run in dev/local mode (by default expects localstack running locally too)
+    # Run in dev/local mode (eg. with LocalStack)
     endpoint_url = app_config['AWS_ENDPOINT']
     print(f'Running example in dev mode with endpoint: {endpoint_url}')
+
     region = app_config['REGION']
     aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
     aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
+
+    # Use variables from .env file as parameter values
     kms = boto3.client('kms',
                         endpoint_url=endpoint_url,
                         region_name=region,
                         aws_access_key_id=aws_access_key_id,
                         aws_secret_access_key=aws_secret_access_key)
 else:
+    # Example setup for use with AWS credentials setup (no LocalStack use)
     kms = boto3.client('kms')
 
 
@@ -80,7 +86,7 @@ def create_key_and_csr(subject):
 @arguably.command
 def generate_certificate_request(kms_key: str, subject: str):
     key_obj = kms.describe_key(KeyId=kms_key)
-    # print(key_obj)
+    print(key_obj)
 
     # Get public key from KMS
     response = kms.get_public_key(KeyId=kms_key)
