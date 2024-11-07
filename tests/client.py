@@ -41,9 +41,22 @@ def get_signer_data_uri(env_file_path=None):
             app_config = dotenv_values(env_file_path)
 
     if app_config is not None:
+        host_port = None
+        client_endpoint = None
+        client_protocol = None
+
         if 'CLIENT_HOST_PORT' in app_config:
             host_port = app_config['CLIENT_HOST_PORT']
-            uri = f'http://127.0.0.1:{host_port}/signer_data'
+        if 'CLIENT_ENDPOINT' in app_config:
+            client_endpoint = app_config['CLIENT_ENDPOINT']
+        if 'CLIENT_PROTOCOL' in app_config:
+            client_protocol = app_config['CLIENT_PROTOCOL']
+
+        if host_port is not None and client_endpoint is not None and client_protocol is not None:
+            uri = f'{client_protocol}://{client_endpoint}:{host_port}/signer_data'
+        else:
+            raise ValueError(f'Invalid configuration: Cannot build endpoint URL.. Missing one of CLIENT_HOST_PORT, CLIENT_ENDPOINT, CLIENT_PROTOCOL')
+
     else:
         print(f'No configuration found. Using default URI {uri}')
 
@@ -131,10 +144,6 @@ parser.add_argument("-o", "--output", type=str, required=True, help="Output dire
 parser.add_argument("-f", "--envfile", type=str, required=False, help="Config environment file")
 
 args = parser.parse_args()
-
-print('#############')
-print(args.envfile)
-print('#############')
 
 # Ensure the output directory exists
 os.makedirs(args.output, exist_ok=True)
