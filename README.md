@@ -361,6 +361,24 @@ Confirm that the app signed the output image by doing one of these:
 
 ### Run the local setup
 
+This builds and runs the containers.
+
 ```shell
 make local
+```
+
+### Re-run the python client
+
+In order to re-run the python client, you can do so by running the following command:
+
+```shell
+docker compose run client tests/A.jpg -o out-images
+```
+
+### Cleanup the local setup
+
+This will stop and remove the containers.
+
+```shell
+make clean
 ```

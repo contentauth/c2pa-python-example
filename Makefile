@@ -8,10 +8,6 @@ run:
 	@echo $(call title, "Running containers.........")
 	docker compose up -d
 
-client:
-	@echo $(call title, "Running client.............")
-	docker compose run client
-
 local: build run
 
 clean:
