@@ -47,14 +47,14 @@ CORS(app)
 
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
-    print('## Using local test certs')
+    print('Using local test certs for signing')
 
     private_key = open('tests/certs/ps256.pem', 'rb').read()
     cert_chain = open('tests/certs/ps256.pub', 'rb').read()
     encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
     signing_alg_str = 'PS256'
 else:
-    print('## Using KMS for signing')
+    print('Using KMS for signing')
 
     kms_key_id = app_config['KMS_KEY_ID']
     cert_chain_path = app_config['CERT_CHAIN_PATH']

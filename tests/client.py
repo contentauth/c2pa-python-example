@@ -25,7 +25,7 @@ def get_signer_data_uri():
     env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
     uri = 'http://127.0.0.1:5000/signer_data'
     if env_file_path is not None:
-        print(f'## Loading environment variables for client from {env_file_path} file defined in env vars')
+        print(f'Loading environment variables for client from {env_file_path} file defined in env vars')
         app_config = dotenv_values(env_file_path)
 
         host_port = app_config['CLIENT_HOST_PORT']
