@@ -12,4 +12,4 @@ local: build run
 
 clean:
 	@echo $(call title, "Cleaning up.................")
-	docker compose down
+	docker compose down --volumes --remove-orphans

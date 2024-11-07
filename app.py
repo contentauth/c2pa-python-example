@@ -184,7 +184,7 @@ def sign():
 
 if __name__ == '__main__':
     app_config = None
-    env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+    env_file_path = os.environ.get('ENV_FILE_PATH')
     if env_file_path is not None:
         print(f'Loading environment variables for server from {env_file_path} file defined in env vars')
         app_config = dotenv_values(env_file_path)
@@ -192,10 +192,10 @@ if __name__ == '__main__':
     port = 5000
     host = 'localhost'
     if app_config is not None:
-        if 'CLIENT_HOST_PORT' in app_config:
-            port = app_config['CLIENT_HOST_PORT']
-        if 'CLIENT_ENDPOINT' in app_config:
-            host = app_config['CLIENT_ENDPOINT']
+        if 'APP_HOST_PORT' in app_config:
+            port = app_config['APP_HOST_PORT']
+        if 'APP_ENDPOINT' in app_config:
+            host = app_config['APP_ENDPOINT']
 
     #app.run(debug=True)
     serve(app, host=host, port=port)

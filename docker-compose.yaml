@@ -7,7 +7,8 @@ services:
       dockerfile: Dockerfile
       target: client
     depends_on:
-      - signer
+      signer:
+        condition: service_started
     environment:
       CLIENT_ENV_FILE_PATH: local_volume/.env
     volumes:
