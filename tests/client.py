@@ -19,8 +19,48 @@ from PIL import Image
 import io
 import base64
 
-# URL to get signer data
-uri = "http://127.0.0.1:5000/signer_data"
+from dotenv import dotenv_values
+
+# Example call using default config (signs image-to-sign, puts signed image in out-images folder)
+# python tests/client.py ./image-to-sign.jpeg  -o out-images
+
+# Example call using a config env file
+# python tests/client.py ./image-to-sign.jpeg  -o out-images -f ./my-example-env-file.env
+
+def get_signer_data_uri(env_file_path=None):
+    uri = 'http://127.0.0.1:5000/signer_data'
+    app_config = None
+
+    if env_file_path is not None:
+        print(f'Loading environment variables for client from config file {env_file_path}')
+        app_config = dotenv_values(env_file_path)
+    else:
+        env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+        if env_file_path is not None:
+            print(f'Loading environment variables for client from {env_file_path} file defined in env vars')
+            app_config = dotenv_values(env_file_path)
+
+    if app_config is not None:
+        host_port = None
+        client_endpoint = None
+        client_protocol = None
+
+        if 'CLIENT_HOST_PORT' in app_config:
+            host_port = app_config['CLIENT_HOST_PORT']
+        if 'CLIENT_ENDPOINT' in app_config:
+            client_endpoint = app_config['CLIENT_ENDPOINT']
+        if 'CLIENT_PROTOCOL' in app_config:
+            client_protocol = app_config['CLIENT_PROTOCOL']
+
+        if host_port is not None and client_endpoint is not None and client_protocol is not None:
+            uri = f'{client_protocol}://{client_endpoint}:{host_port}/signer_data'
+        else:
+            raise ValueError(f'Invalid configuration: Cannot build endpoint URL.. Missing one of CLIENT_HOST_PORT, CLIENT_ENDPOINT, CLIENT_PROTOCOL')
+
+    else:
+        print(f'No configuration found. Using default URI {uri}')
+
+    return uri
 
 # Generate a sign function from signer data returned by the url
 def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
@@ -39,7 +79,7 @@ def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
             raise ValueError(f"Unsupported signing algorithm: {alg_str}")
     else:
         raise ValueError(f"Failed to get signer data: {response.status_code} {response.text}")
-    
+
     #sign = lambda data: requests.post(json_data["signing_url"], data=data).content
     def remote_sign(data):
         try:
@@ -101,12 +141,14 @@ ingredient_json = {
 parser = argparse.ArgumentParser(description="Sign files with C2PA.")
 parser.add_argument("files", metavar="F", type=str, nargs="+", help="Files to be signed")
 parser.add_argument("-o", "--output", type=str, required=True, help="Output directory")
+parser.add_argument("-f", "--envfile", type=str, required=False, help="Config environment file")
 
 args = parser.parse_args()
 
 # Ensure the output directory exists
 os.makedirs(args.output, exist_ok=True)
 
+uri = get_signer_data_uri(args.envfile)
 signer = get_remote_signer(uri)
 
 # Sign each file and write to the output directory

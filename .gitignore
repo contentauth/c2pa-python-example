@@ -1,6 +1,6 @@
 __pycache__/
 c2pa-env
-.env
+*.env
 chain.pem
 config.json
 kms-signing.crt
@@ -9,3 +9,4 @@ rootCA.crt
 rootCA.key
 target/
 .DS_Store
+out-images/
