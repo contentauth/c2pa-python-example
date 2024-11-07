@@ -372,8 +372,10 @@ make local
 In order to re-run the python client, you can do so by running the following command:
 
 ```shell
-docker compose run client tests/A.jpg -o out-images
+docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
 ```
+
+Make sure to replace `./tests/A.jpg` with the path to the image you want to sign.
 
 ### Cleanup the local setup
 

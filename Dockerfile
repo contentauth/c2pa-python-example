@@ -14,7 +14,7 @@ ENTRYPOINT [ "python", "app.py" ]
 
 FROM build AS client
 
-ENTRYPOINT [ "python", "tests/client.py" ]
+ENTRYPOINT [ "python", "tests/client.py", "./tests/A.jpg", "-o", "client_volume/signed-images" ]
 
 FROM build AS local-setup
 

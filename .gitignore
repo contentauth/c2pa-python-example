@@ -12,3 +12,5 @@ target/
 out-images/
 .DS_Store
 volume/
+local_volume/
+client_volume/

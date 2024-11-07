@@ -11,6 +11,7 @@ services:
     environment:
       CLIENT_ENV_FILE_PATH: local_volume/.env
     volumes:
+      - "${CLIENT_VOLUME_DIR:-./client_volume}:/usr/src/app/client_volume"
       - "local-data:/usr/src/app/local_volume"
   localstack:
     container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
@@ -40,7 +41,7 @@ services:
     environment:
       ENV_FILE_PATH: local_volume/.env
     ports:
-      - 5000:5000
+      - 5001:5000
     volumes:
       - "local-data:/usr/src/app/local_volume"
   setup:
