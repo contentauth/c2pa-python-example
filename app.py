@@ -126,7 +126,7 @@ def resize():
       return result.getvalue()
     except Exception as e:
         logging.error(e)
-        return "Error"
+        abort(500, description=e)
 
 
 # Uses KMS to sign
