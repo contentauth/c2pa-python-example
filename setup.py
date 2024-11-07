@@ -100,7 +100,7 @@ def create_kms_key(env_file_path=None):
 
     return key_id
 
-# Example call: python setup.py create-key-and-csr subject='CN=John Smith,O=C2PA Python Demo'  env_file_path='./my-awesome-example-env-file.env'
+# Example call: python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo' './my-env-file.env'
 @arguably.command
 def create_key_and_csr(subject, env_file_path=None):
     key_id = create_kms_key(env_file_path)
