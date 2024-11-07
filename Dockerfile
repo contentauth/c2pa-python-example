@@ -10,7 +10,7 @@ ENTRYPOINT [ "python" ]
 FROM build AS app
 
 COPY . .
-ENTRYPOINT [ "flask", "run" ]
+ENTRYPOINT [ "python", "app.py" ]
 
 EXPOSE 5001
 
@@ -19,12 +19,12 @@ FROM build AS local
 COPY . .
 RUN apt-get update \
     && apt-get install -y \
+    less \
     jq
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && ./aws/install
 RUN python3 -m pip install --upgrade localstack
 RUN pip install awscli-local[ver2]
-RUN sed -i 's/localhost.localstack.cloud/localstack/g' .env.local
 
-ENTRYPOINT [ "bash", "-c", "./local-setup.sh" ]
+ENTRYPOINT [ "bash", "./local-setup.sh" ]

@@ -6,3 +6,5 @@ LICENSE
 README.md
 *.txt
 !requirements.txt
+volume/
+local_volume/

@@ -352,3 +352,21 @@ Confirm that the app signed the output image by doing one of these:
 
 - If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
+
+## Docker Setup
+
+### Pre-requisites
+
+- Docker Desktop
+
+### Build the Docker images
+
+```bash
+docker compose build
+```
+
+### Run the containers
+
+```bash
+docker compose up -d
+```

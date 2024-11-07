@@ -8,5 +8,8 @@ kms-signing.csr
 rootCA.crt
 rootCA.key
 target/
+<<<<<<< HEAD
 .DS_Store
 out-images/
+.DS_Store
+volume/

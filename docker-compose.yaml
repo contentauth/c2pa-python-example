@@ -18,18 +18,26 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+        restart: true
+      localstack:
+        condition: service_started
     ports:
       - 5001:5001
-    command: flask run
+    volumes:
+      - "local-data:/usr/src/app/local_volume"
   setup:
     container_name: setup
     image: local-setup:latest
     build:
-      no_cache: true
       context: .
       dockerfile: Dockerfile
       target: local
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
     volumes:
-      - "${SETUP_VOLUME_DIR:-./}:/usr/src/dev"
+      - "local-data:/usr/src/app/local_volume"
+volumes:
+  local-data:
