@@ -25,9 +25,6 @@ import json
 # Load environment variable from .env file
 from dotenv import dotenv_values
 
-# python setup.py --env-file-path local-volume/.env
-
-
 # Set constants
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
 end_marker = '-----END CERTIFICATE REQUEST-----'
@@ -80,10 +77,16 @@ def read_env_params(env_file_path=None):
 
   return kms
 
-kms = read_env_params()
 
+def create_kms_key(env_file_path=None):
+    kms = None
+    if env_file_path is not None:
+        print(f'Using env variables from {env_file_path} to build environment and KMS client')
+        kms = read_env_params(env_file_path)
+    else:
+        print(f'Using default environment to build environment and KMS client')
+        kms = read_env_params()
 
-def create_kms_key():
     response = kms.create_key(
         Description='C2PA Python KMS Demo Key',
         KeyUsage='SIGN_VERIFY',
@@ -100,12 +103,24 @@ def create_kms_key():
 
 @arguably.command
 def create_key_and_csr(subject: str, env_file_path=None):
-    key_id = create_kms_key()
-    generate_certificate_request(key_id, subject)
+    key_id = create_kms_key(env_file_path)
+
+    if key_id is not None:
+        generate_certificate_request(key_id, subject)
+    else:
+        print('Error during KMS key ID generation')
+        raise Exception('No KMS key id generated')
 
 
 @arguably.command
 def generate_certificate_request(kms_key: str, subject: str, env_file_path=None):
+    if env_file_path is not None:
+        print(f'Using env variables from {env_file_path} to build environment and KMS client')
+        kms = read_env_params(env_file_path)
+    else:
+        print(f'Using default environment to build environment and KMS client')
+        kms = read_env_params()
+
     key_obj = kms.describe_key(KeyId=kms_key)
     print(key_obj)
 
