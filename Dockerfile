@@ -4,19 +4,20 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
 
 ENTRYPOINT [ "python" ]
 
 FROM build AS app
 
-COPY . .
 ENTRYPOINT [ "python", "app.py" ]
 
-EXPOSE 5001
+FROM build AS client
 
-FROM build AS local
+ENTRYPOINT [ "python", "tests/client.py" ]
 
-COPY . .
+FROM build AS local-setup
+
 RUN apt-get update \
     && apt-get install -y \
     less \

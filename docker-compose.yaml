@@ -1,4 +1,19 @@
 services:
+  client:
+    container_name: local-client
+    image: local-client:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: client
+    depends_on:
+      - localstack
+      - signer
+    environment:
+      AWS_ENDPOINT_URL: http://localstack:4566
+      C2PA_SIGNER_URL: http://signer:5000
+    volumes:
+      - "$PWD:/usr/src/app/local_volume"
   localstack:
     container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
     image: localstack/localstack
@@ -24,17 +39,19 @@ services:
         restart: true
       localstack:
         condition: service_started
+    expose:
+      - 5000
     ports:
-      - 5001:5001
+      - 5001:5000
     volumes:
       - "local-data:/usr/src/app/local_volume"
   setup:
-    container_name: setup
+    container_name: local-setup
     image: local-setup:latest
     build:
       context: .
       dockerfile: Dockerfile
-      target: local
+      target: local-setup
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
     volumes:
