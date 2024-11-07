@@ -153,6 +153,11 @@ def kms_sign(data: bytes) -> bytes:
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
 
+@app.route("/health", methods=["GET"])
+def hello_world():
+    return "<p>Healthy!</p>"
+
+
 @app.route("/signer_data", methods=["GET"])
 def signer_data():
     logging.info('Getting signer data')

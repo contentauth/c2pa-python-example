@@ -8,7 +8,7 @@ services:
       target: client
     depends_on:
       signer:
-        condition: service_started
+        condition: service_healthy
     environment:
       CLIENT_ENV_FILE_PATH: local_volume/.env
     volumes:
@@ -41,6 +41,13 @@ services:
         condition: service_started
     environment:
       ENV_FILE_PATH: local_volume/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://signer:5000/health"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      start_interval: 5s
     ports:
       - 5001:5000
     volumes:
