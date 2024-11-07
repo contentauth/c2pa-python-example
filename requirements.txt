@@ -12,3 +12,4 @@ boto3
 requests
 pillow
 flask_cors
+waitress

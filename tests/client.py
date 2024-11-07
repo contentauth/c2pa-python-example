@@ -28,7 +28,7 @@ from dotenv import dotenv_values
 # python tests/client.py ./image-to-sign.jpeg  -o out-images -f ./my-example-env-file.env
 
 def get_signer_data_uri(env_file_path=None):
-    uri = 'http://127.0.0.1:5000/signer_data'
+    uri = "http://localhost:5000/signer_data"
     app_config = None
 
     if env_file_path is not None:

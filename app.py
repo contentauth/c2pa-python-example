@@ -11,6 +11,7 @@
 # each license.
 
 from flask import Flask, request, abort
+from waitress import serve
 import logging
 import json
 import io
@@ -18,7 +19,6 @@ import os
 import boto3
 import base64
 from flask_cors import CORS
-
 from c2pa import *
 from hashlib import sha256
 
@@ -182,6 +182,20 @@ def sign():
         logging.error(e)
         abort(500, description=e)
 
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app_config = None
+    env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+    if env_file_path is not None:
+        print(f'Loading environment variables for server from {env_file_path} file defined in env vars')
+        app_config = dotenv_values(env_file_path)
+
+    port = 5000
+    host = 'localhost'
+    if app_config is not None:
+        if 'CLIENT_HOST_PORT' in app_config:
+            port = app_config['CLIENT_HOST_PORT']
+        if 'CLIENT_ENDPOINT' in app_config:
+            host = app_config['CLIENT_ENDPOINT']
+
+    #app.run(debug=True)
+    serve(app, host=host, port=port)
