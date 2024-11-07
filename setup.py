@@ -3,7 +3,6 @@
 import arguably
 
 import boto3
-import yaml
 
 from pyasn1.codec.der import decoder, encoder
 from pyasn1.type import univ
@@ -13,7 +12,7 @@ import pyasn1_modules.rfc2314
 import hashlib
 import base64
 import textwrap
-import sys
+import os
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
@@ -25,8 +24,8 @@ import json
 
 # Load environment variable from .env file
 from dotenv import dotenv_values
-app_config = dotenv_values(".env")
-run_mode = app_config['RUN_MODE']
+
+# python setup.py --env-file-path local-volume/.env
 
 
 # Set constants
@@ -41,24 +40,47 @@ csr_file = 'kms-signing.csr'
 config_file = 'config.json'
 
 
-if run_mode == 'DEV':
-    # Run in dev/local mode (eg. with LocalStack)
-    endpoint_url = app_config['AWS_ENDPOINT']
-    print(f'Running example in dev mode with endpoint: {endpoint_url}')
+def read_env_params(env_file_path=None):
+  if env_file_path is not None:
+      print(f'## Loading environment variables from: {env_file_path}')
+      app_config = dotenv_values(env_file_path)
+  else:
+    print('## No env file path received as param. Looking at other possible locations...')
 
-    region = app_config['REGION']
-    aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
-    aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
+    env_file_path = os.environ.get('ENV_FILE_PATH')
+    if env_file_path is not None:
+        print(f'## Loading environment variables from default {env_file_path} file defined in env vars')
+        app_config = dotenv_values(env_file_path)
+    else:
+        print('## Loading env variables values from default env file')
+        app_config = dotenv_values(".env")
 
-    # Use variables from .env file as parameter values
-    kms = boto3.client('kms',
-                        endpoint_url=endpoint_url,
-                        region_name=region,
-                        aws_access_key_id=aws_access_key_id,
-                        aws_secret_access_key=aws_secret_access_key)
-else:
-    # Example setup for use with AWS credentials setup (no LocalStack use)
-    kms = boto3.client('kms')
+  run_mode = app_config['RUN_MODE']
+
+  kms = None
+
+  if run_mode == 'DEV':
+      # Run in dev/local mode (eg. with LocalStack)
+      endpoint_url = app_config['AWS_ENDPOINT']
+      print(f'Running example in dev mode with endpoint: {endpoint_url}')
+
+      region = app_config['REGION']
+      aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
+      aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
+
+      # Use variables from .env file as parameter values
+      kms = boto3.client('kms',
+                          endpoint_url=endpoint_url,
+                          region_name=region,
+                          aws_access_key_id=aws_access_key_id,
+                          aws_secret_access_key=aws_secret_access_key)
+  else:
+      # Example setup for use with AWS credentials setup (no LocalStack use)
+      kms = boto3.client('kms')
+
+  return kms
+
+kms = read_env_params()
 
 
 def create_kms_key():
@@ -76,15 +98,14 @@ def create_kms_key():
 
     return key_id
 
-
 @arguably.command
-def create_key_and_csr(subject):
+def create_key_and_csr(subject: str, env_file_path=None):
     key_id = create_kms_key()
     generate_certificate_request(key_id, subject)
 
 
 @arguably.command
-def generate_certificate_request(kms_key: str, subject: str):
+def generate_certificate_request(kms_key: str, subject: str, env_file_path=None):
     key_obj = kms.describe_key(KeyId=kms_key)
     print(key_obj)
 
