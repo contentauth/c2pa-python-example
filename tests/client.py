@@ -29,7 +29,9 @@ def get_signer_data_uri():
         app_config = dotenv_values(env_file_path)
 
         host_port = app_config['CLIENT_HOST_PORT']
-        uri = f'http://127.0.0.1:{host_port}/signer_data'
+        if 'CLIENT_HOST_PORT' in host_port:
+            host_port = app_config['CLIENT_HOST_PORT']
+            uri = f'http://127.0.0.1:{host_port}/signer_data'
 
         print(f'Using default client URI {uri} (from env variables)')
     else:

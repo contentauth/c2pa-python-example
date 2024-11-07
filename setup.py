@@ -55,7 +55,7 @@ def read_env_params(env_file_path=None):
   kms = None
   run_mode = app_config['RUN_MODE']
 
-  if run_mode == 'DEV':
+  if 'RUN_MODE' in app_config and run_mode == 'DEV':
       # Run in dev/local mode (eg. with LocalStack)
       endpoint_url = app_config['AWS_ENDPOINT']
       print(f'Running example in dev mode with endpoint: {endpoint_url}')
