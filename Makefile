@@ -13,3 +13,7 @@ client:
 	docker compose run client
 
 local: build run
+
+clean:
+	@echo $(call title, "Cleaning up.................")
+	docker compose down

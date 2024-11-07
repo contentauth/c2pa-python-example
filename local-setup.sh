@@ -41,5 +41,12 @@ cp chain.pem local_volume/chain.pem
 echo "Adding CERT_CHAIN_PATH to .env.local"
 echo "CERT_CHAIN_PATH=local_volume/chain.pem" >> .env.local
 
+echo "Adding CLIENT ENV_VARS to .env.local"
+cat <<EOT >> .env.local
+CLIENT_ENDPOINT=signer
+CLIENT_HOST_PORT=5000
+CLIENT_PROTOCOL=http
+EOT
+
 echo "Copying .env.local to local_volume/.env"
 cp .env.local local_volume/.env

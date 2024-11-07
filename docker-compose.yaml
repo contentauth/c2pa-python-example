@@ -11,9 +11,10 @@ services:
       - signer
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
-      C2PA_SIGNER_URL: http://signer:5000
+      CLIENT_ENV_FILE_PATH: local_volume/.env
     volumes:
-      - "$PWD:/usr/src/app/local_volume"
+      - "$PWD:/usr/src/client/"
+      - "local-data:/usr/src/app/local_volume"
   localstack:
     container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
     image: localstack/localstack
@@ -39,6 +40,8 @@ services:
         restart: true
       localstack:
         condition: service_started
+    environment:
+      ENV_FILE_PATH: local_volume/.env
     expose:
       - 5000
     ports:
@@ -54,6 +57,7 @@ services:
       target: local-setup
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
+      ENV_FILE_PATH: local_volume/.env
     volumes:
       - "local-data:/usr/src/app/local_volume"
 volumes:
