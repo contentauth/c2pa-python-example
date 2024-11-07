@@ -1,4 +1,4 @@
-.gitigonre
+.gitignore
 *.md
 docker-compose.yml
 example-env.env
