@@ -357,16 +357,10 @@ Confirm that the app signed the output image by doing one of these:
 
 ### Pre-requisites
 
-- Docker Desktop
+- Docker Desktop version 4.34.3 (170107) or later
 
-### Build the Docker images
+### Run the local setup
 
-```bash
-docker compose build
-```
-
-### Run the containers
-
-```bash
-docker compose up -d
+```shell
+make local
 ```
