@@ -14,25 +14,27 @@ from flask import Flask, request, abort
 import logging
 import json
 import io
+import os
 import boto3
 import base64
-import dotenv
 from flask_cors import CORS
 
 from c2pa import *
 from hashlib import sha256
 
 
-
 # Load environment variable from .env file
 from dotenv import dotenv_values
-app_config = dotenv_values(".env")
 
+env_file_path = os.environ.get('ENV_FILE_PATH')
+if env_file_path is not None:
+    app_config = dotenv_values(env_file_path)
+else:
+    app_config = dotenv_values(".env")
 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
 
 
 # Run Flask app
