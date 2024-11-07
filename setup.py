@@ -39,17 +39,17 @@ config_file = 'config.json'
 
 def read_env_params(env_file_path=None):
   if env_file_path is not None:
-      print(f'## Loading environment variables from: {env_file_path}')
+      print(f'Loading environment variables from: {env_file_path}')
       app_config = dotenv_values(dotenv_path=env_file_path)
   else:
-    print('## No env file path received as param. Looking at other possible locations...')
+    print('No env file path received as param. Looking at other possible locations...')
 
     env_file_path = os.environ.get('ENV_FILE_PATH')
     if env_file_path is not None:
-        print(f'## Loading environment variables from default {env_file_path} file defined in env vars')
+        print(f'Loading environment variables from {env_file_path} file defined in env vars')
         app_config = dotenv_values(env_file_path)
     else:
-        print('## Loading env variables values from default env file')
+        print('Loading env variables values from default .env file')
         app_config = dotenv_values(".env")
 
   kms = None

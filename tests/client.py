@@ -19,8 +19,23 @@ from PIL import Image
 import io
 import base64
 
-# URL to get signer data
-uri = "http://127.0.0.1:5000/signer_data"
+from dotenv import dotenv_values
+
+def get_signer_data_uri():
+    env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+    uri = 'http://127.0.0.1:5000/signer_data'
+    if env_file_path is not None:
+        print(f'## Loading environment variables for client from {env_file_path} file defined in env vars')
+        app_config = dotenv_values(env_file_path)
+
+        host_port = app_config['CLIENT_HOST_PORT']
+        uri = f'http://127.0.0.1:{host_port}/signer_data'
+
+        print(f'Using default client URI {uri} (from env variables)')
+    else:
+        print(f'Using default client URI {uri}')
+
+    return uri
 
 # Generate a sign function from signer data returned by the url
 def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
@@ -107,6 +122,7 @@ args = parser.parse_args()
 # Ensure the output directory exists
 os.makedirs(args.output, exist_ok=True)
 
+uri = get_signer_data_uri()
 signer = get_remote_signer(uri)
 
 # Sign each file and write to the output directory
