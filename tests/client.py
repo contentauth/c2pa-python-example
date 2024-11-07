@@ -21,21 +21,25 @@ import base64
 
 from dotenv import dotenv_values
 
-def get_signer_data_uri():
-    env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+def get_signer_data_uri(env_file_path=None):
     uri = 'http://127.0.0.1:5000/signer_data'
-    if env_file_path is not None:
-        print(f'Loading environment variables for client from {env_file_path} file defined in env vars')
-        app_config = dotenv_values(env_file_path)
+    app_config = None
 
-        host_port = app_config['CLIENT_HOST_PORT']
-        if 'CLIENT_HOST_PORT' in host_port:
+    if env_file_path is not None:
+        print(f'Loading environment variables for client from config file {env_file_path}')
+        app_config = dotenv_values(env_file_path)
+    else:
+        env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+        if env_file_path is not None:
+            print(f'Loading environment variables for client from {env_file_path} file defined in env vars')
+            app_config = dotenv_values(env_file_path)
+
+    if app_config is not None:
+        if 'CLIENT_HOST_PORT' in app_config:
             host_port = app_config['CLIENT_HOST_PORT']
             uri = f'http://127.0.0.1:{host_port}/signer_data'
-
-        print(f'Using default client URI {uri} (using CLIENT_HOST_PORT from env variables)')
     else:
-        print(f'Using default client URI {uri}')
+        print(f'No configuration found. Using default URI {uri}')
 
     return uri
 
@@ -118,13 +122,18 @@ ingredient_json = {
 parser = argparse.ArgumentParser(description="Sign files with C2PA.")
 parser.add_argument("files", metavar="F", type=str, nargs="+", help="Files to be signed")
 parser.add_argument("-o", "--output", type=str, required=True, help="Output directory")
+parser.add_argument("-f", "--envfile", type=str, required=False, help="Config environment file")
 
 args = parser.parse_args()
+
+print('#############')
+print(args.envfile)
+print('#############')
 
 # Ensure the output directory exists
 os.makedirs(args.output, exist_ok=True)
 
-uri = get_signer_data_uri()
+uri = get_signer_data_uri(args.envfile)
 signer = get_remote_signer(uri)
 
 # Sign each file and write to the output directory
