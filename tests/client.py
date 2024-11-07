@@ -21,6 +21,12 @@ import base64
 
 from dotenv import dotenv_values
 
+# Example call using default config (signs image-to-sign, puts signed image in out-images folder)
+# python tests/client.py ./image-to-sign.jpeg  -o out-images
+
+# Example call using a config env file
+# python tests/client.py ./image-to-sign.jpeg  -o out-images -f ./my-example-env-file.env
+
 def get_signer_data_uri(env_file_path=None):
     uri = 'http://127.0.0.1:5000/signer_data'
     app_config = None
