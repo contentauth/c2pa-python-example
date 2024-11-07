@@ -317,7 +317,7 @@ By default, when this command is run from the root of this repository, this will
 1. Run the application by entering this command:
 
     ```shell
-    FLASK_KMS_KEY_ID="$KMS_KEY_ID" FLASK_CERT_CHAIN_PATH="./chain.pem" flask run
+    python3 app.py
     ```
 
     You'll see a response like this:

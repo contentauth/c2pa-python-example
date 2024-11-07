@@ -37,7 +37,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Run Flask app
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
 # Load env vars with a given prefix into APP config
 # By default, env vars with the `FLASK_`` prefix
