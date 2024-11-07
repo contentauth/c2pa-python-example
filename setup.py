@@ -40,7 +40,7 @@ config_file = 'config.json'
 def read_env_params(env_file_path=None):
   if env_file_path is not None:
       print(f'## Loading environment variables from: {env_file_path}')
-      app_config = dotenv_values(env_file_path)
+      app_config = dotenv_values(dotenv_path=env_file_path)
   else:
     print('## No env file path received as param. Looking at other possible locations...')
 
@@ -52,9 +52,8 @@ def read_env_params(env_file_path=None):
         print('## Loading env variables values from default env file')
         app_config = dotenv_values(".env")
 
-  run_mode = app_config['RUN_MODE']
-
   kms = None
+  run_mode = app_config['RUN_MODE']
 
   if run_mode == 'DEV':
       # Run in dev/local mode (eg. with LocalStack)
@@ -101,12 +100,13 @@ def create_kms_key(env_file_path=None):
 
     return key_id
 
+# Example call: python setup.py create-key-and-csr subject='CN=John Smith,O=C2PA Python Demo'  env_file_path='./my-awesome-example-env-file.env'
 @arguably.command
-def create_key_and_csr(subject: str, env_file_path=None):
+def create_key_and_csr(subject, env_file_path=None):
     key_id = create_kms_key(env_file_path)
 
     if key_id is not None:
-        generate_certificate_request(key_id, subject)
+        generate_certificate_request(key_id, subject, env_file_path)
     else:
         print('Error during KMS key ID generation')
         raise Exception('No KMS key id generated')
