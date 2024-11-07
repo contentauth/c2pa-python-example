@@ -33,7 +33,7 @@ def get_signer_data_uri():
             host_port = app_config['CLIENT_HOST_PORT']
             uri = f'http://127.0.0.1:{host_port}/signer_data'
 
-        print(f'Using default client URI {uri} (from env variables)')
+        print(f'Using default client URI {uri} (using CLIENT_HOST_PORT from env variables)')
     else:
         print(f'Using default client URI {uri}')
 
