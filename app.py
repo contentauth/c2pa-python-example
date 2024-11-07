@@ -49,6 +49,8 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
 
     private_key = open("tests/certs/ps256.pem","rb").read()
     cert_chain = open("tests/certs/ps256.pub","rb").read()
+    encoded_cert_chain = base64.b64encode(cert_chain).decode("utf-8")
+    signing_alg_str = "PS256"
 else:
     print("## Using KMS")
 
@@ -56,6 +58,8 @@ else:
     cert_chain_path = app_config["CERT_CHAIN_PATH"]
 
     cert_chain = open(cert_chain_path, "rb").read()
+    encoded_cert_chain = base64.b64encode(cert_chain).decode("utf-8")
+    signing_alg_str = "ES256"
 
     run_mode = app_config['RUN_MODE']
 
@@ -82,10 +86,22 @@ else:
     print("Using KMS key: " + kms_key_id)
     print("Using certificate chain: " + cert_chain_path)
 
+# Allow configuration of the timestamp URL
+if 'TIMESTAMP_URL' in app_config and app_config['TIMESTAMP_URL']:
+    timestamp_url = app_config['TIMESTAMP_URL']
+else:
+    timestamp_url = "http://timestamp.digicert.com" # Default timestamp URL (change to None later?)
+
+# todo: Get signing_alg_str from env when we support more algorithms
+try:
+    signing_alg = getattr(SigningAlg, signing_alg_str)
+except AttributeError:
+    raise ValueError(f"Unsupported signing algorithm: {signing_alg_str}")
 
 @app.route("/attach", methods=["POST"])
 def resize():
     request_data = request.get_data()
+    content_type = request.headers.get('Content-Type', 'image/jpeg')  # Default to 'image/jpeg' if not provided
 
     manifest = json.dumps({
         "title": "image.jpg",
@@ -117,11 +133,11 @@ def resize():
     try:
       builder = Builder(manifest)
 
-      signer = create_signer(kms_sign, SigningAlg.ES256,
-                            cert_chain, "http://timestamp.digicert.com")
+      signer = create_signer(kms_sign, signing_alg,
+                            cert_chain, timestamp_url)
 
       result = io.BytesIO(b"")
-      builder.sign(signer, "image/jpeg", io.BytesIO(request_data), result)
+      builder.sign(signer, content_type, io.BytesIO(request_data), result)
 
       return result.getvalue()
     except Exception as e:
@@ -136,16 +152,14 @@ def kms_sign(data: bytes) -> bytes:
 
 
 @app.route("/signer_data", methods=["GET"])
-
 def signer_data():
     logging.info("Getting signer data")
     try:
-        chain = base64.b64encode(cert_chain).decode("utf-8")
         data = json.dumps({
-            "alg": "PS256",
-            "timestamp_url": "http://timestamp.digicert.com",
-            "signing_url": "http://127.0.0.1:5000/sign",
-            "cert_chain": chain
+            "alg": signing_alg_str,
+            "timestamp_url": timestamp_url,
+            "signing_url": f"{request.host_url}sign",
+            "cert_chain": encoded_cert_chain
         })
     except Exception as e:
         logging.error(e)
