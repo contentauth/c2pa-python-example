@@ -30,7 +30,7 @@ env_file_path = os.environ.get('ENV_FILE_PATH')
 if env_file_path is not None:
     app_config = dotenv_values(env_file_path)
 else:
-    app_config = dotenv_values(".env")
+    app_config = dotenv_values('.env')
 
 
 # Configure logging
@@ -47,21 +47,21 @@ CORS(app)
 
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
-    print("## Using local test certs")
+    print('## Using local test certs')
 
-    private_key = open("tests/certs/ps256.pem","rb").read()
-    cert_chain = open("tests/certs/ps256.pub","rb").read()
-    encoded_cert_chain = base64.b64encode(cert_chain).decode("utf-8")
-    signing_alg_str = "PS256"
+    private_key = open('tests/certs/ps256.pem', 'rb').read()
+    cert_chain = open('tests/certs/ps256.pub', 'rb').read()
+    encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
+    signing_alg_str = 'PS256'
 else:
-    print("## Using KMS")
+    print('## Using KMS for signing')
 
-    kms_key_id = app_config["KMS_KEY_ID"]
-    cert_chain_path = app_config["CERT_CHAIN_PATH"]
+    kms_key_id = app_config['KMS_KEY_ID']
+    cert_chain_path = app_config['CERT_CHAIN_PATH']
 
-    cert_chain = open(cert_chain_path, "rb").read()
-    encoded_cert_chain = base64.b64encode(cert_chain).decode("utf-8")
-    signing_alg_str = "ES256"
+    cert_chain = open(cert_chain_path, 'rb').read()
+    encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
+    signing_alg_str = 'ES256'
 
     run_mode = app_config['RUN_MODE']
 
@@ -85,14 +85,14 @@ else:
         kms = session.client('kms')
 
 
-    print("Using KMS key: " + kms_key_id)
-    print("Using certificate chain: " + cert_chain_path)
+    print('Using KMS key: ' + kms_key_id)
+    print('Using certificate chain: ' + cert_chain_path)
 
 # Allow configuration of the timestamp URL
 if 'TIMESTAMP_URL' in app_config and app_config['TIMESTAMP_URL']:
     timestamp_url = app_config['TIMESTAMP_URL']
 else:
-    timestamp_url = "http://timestamp.digicert.com" # Default timestamp URL (change to None later?)
+    timestamp_url = 'http://timestamp.digicert.com' # Default timestamp URL (change to None later?)
 
 # todo: Get signing_alg_str from env when we support more algorithms
 try:
@@ -155,7 +155,7 @@ def kms_sign(data: bytes) -> bytes:
 
 @app.route("/signer_data", methods=["GET"])
 def signer_data():
-    logging.info("Getting signer data")
+    logging.info('Getting signer data')
     try:
         data = json.dumps({
             "alg": signing_alg_str,
@@ -171,7 +171,7 @@ def signer_data():
 
 @app.route("/sign", methods=["POST"])
 def sign():
-    logging.info("Signing data")
+    logging.info('Signing data')
     try:
         data = request.get_data()
         if private_key:
