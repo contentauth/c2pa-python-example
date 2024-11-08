@@ -63,9 +63,7 @@ else:
     encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
     signing_alg_str = 'ES256'
 
-    run_mode = app_config['RUN_MODE']
-
-    if run_mode == 'DEV':
+    if 'RUN_MODE' in app_config and app_config['RUN_MODE'] == 'DEV':
         # For use with Localstack
         endpoint_url = app_config['AWS_ENDPOINT_URL']
         print(f'Running example in dev mode with endpoint: {endpoint_url}')

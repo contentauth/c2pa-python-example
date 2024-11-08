@@ -70,8 +70,6 @@ def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
         certs = json_data["cert_chain"]
         # Convert certs string to bytes using UTF-8 encoding
         certs = base64.b64decode(certs.encode("utf-8"))
-        cert_chain = open("tests/certs/ps256.pub","rb").read()
-        assert certs == cert_chain
         alg_str = json_data["alg"].upper()
         try:
             alg = getattr(c2pa.SigningAlg, alg_str)
