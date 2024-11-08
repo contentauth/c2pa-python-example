@@ -4,7 +4,7 @@
 
 [This repository](https://github.com/contentauth/c2pa-python-example) is an example of a simple application that accepts an uploaded JPEG image file, attaches a C2PA manifest, and signs it using a certificate.  The app uses the CAI Python library and the [Flask Python framework](https://flask.palletsprojects.com/en/3.0.x/) to implement a back-end REST endpoint; it does not have an HTML front-end, so you have to use something like `curl` to access it.
 
-The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS. 
+The app uses [Amazon Key Management Service (KMS)](https://aws.amazon.com/kms/) to create and control cryptographic keys and the [AWS SDK for Python (boto3)](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html) to call KMS.
 During development and testing, you can also use [LocalStack](https://www.localstack.cloud/) to run a localized environment that simulates interactions with AWS.
 
 ### About CSRs
@@ -352,3 +352,35 @@ Confirm that the app signed the output image by doing one of these:
 
 - If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
+
+## Docker Setup
+
+### Pre-requisites
+
+- Docker Desktop version 4.34.3 (170107) or later.
+
+### Run the local setup
+
+This builds and runs the containers.
+
+```shell
+make local
+```
+
+### Re-run the python client
+
+In order to re-run the python client, run the following command:
+
+```shell
+docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
+```
+
+Make sure to replace `./tests/A.jpg` with the path to the image you want to sign.
+
+### Cleanup the local setup
+
+This will stop and remove the containers.
+
+```shell
+make clean
+```

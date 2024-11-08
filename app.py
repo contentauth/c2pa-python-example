@@ -67,9 +67,9 @@ else:
 
     if run_mode == 'DEV':
         # For use with Localstack
-        endpoint_url = app_config['AWS_ENDPOINT']
+        endpoint_url = app_config['AWS_ENDPOINT_URL']
         print(f'Running example in dev mode with endpoint: {endpoint_url}')
-        region = app_config['REGION']
+        region = app_config['AWS_REGION']
         aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
         aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
         session = boto3.Session(region_name=region,
@@ -153,6 +153,11 @@ def kms_sign(data: bytes) -> bytes:
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
 
+@app.route("/health", methods=["GET"])
+def hello_world():
+    return "<p>Healthy!</p>"
+
+
 @app.route("/signer_data", methods=["GET"])
 def signer_data():
     logging.info('Getting signer data')
@@ -184,7 +189,7 @@ def sign():
 
 if __name__ == '__main__':
     app_config = None
-    env_file_path = os.environ.get('CLIENT_ENV_FILE_PATH')
+    env_file_path = os.environ.get('ENV_FILE_PATH')
     if env_file_path is not None:
         print(f'Loading environment variables for server from {env_file_path} file defined in env vars')
         app_config = dotenv_values(env_file_path)
@@ -192,10 +197,10 @@ if __name__ == '__main__':
     port = 5000
     host = 'localhost'
     if app_config is not None:
-        if 'CLIENT_HOST_PORT' in app_config:
-            port = app_config['CLIENT_HOST_PORT']
-        if 'CLIENT_ENDPOINT' in app_config:
-            host = app_config['CLIENT_ENDPOINT']
+        if 'APP_HOST_PORT' in app_config:
+            port = app_config['APP_HOST_PORT']
+        if 'APP_ENDPOINT' in app_config:
+            host = app_config['APP_ENDPOINT']
 
     #app.run(debug=True)
     serve(app, host=host, port=port)
