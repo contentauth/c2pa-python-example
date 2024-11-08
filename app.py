@@ -175,8 +175,10 @@ def sign():
     try:
         data = request.get_data()
         if private_key:
+            logging.info('Using local key to sign')
             return sign_ps256(data, private_key)
         else:
+            logging.info('Using KMS to sign')
             return kms_sign(data)
     except Exception as e:
         logging.error(e)
@@ -190,7 +192,7 @@ if __name__ == '__main__':
         app_config = dotenv_values(env_file_path)
 
     port = 5000
-    host = 'localhost'
+    host = '0.0.0.0'
     if app_config is not None:
         if 'CLIENT_HOST_PORT' in app_config:
             port = app_config['CLIENT_HOST_PORT']

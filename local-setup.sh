@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+sleep 5
+
 echo "Creating a test user in localstack"
 awslocal --endpoint-url=http://localstack:4566 iam create-user --user-name test
 
