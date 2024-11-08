@@ -60,7 +60,7 @@ services:
       dockerfile: Dockerfile
       target: local-setup
     environment:
-      ENV_FILE_PATH: local_volume/.env
+      ENV_FILE_PATH: .env.local
     volumes:
       - "local-data:/usr/src/app/local_volume"
 volumes:
