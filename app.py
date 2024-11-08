@@ -45,6 +45,8 @@ CORS(app)
 # By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
 
+private_key = None
+
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
     print('Using local test certs for signing')
@@ -177,9 +179,11 @@ def sign():
     logging.info('Signing data')
     try:
         data = request.get_data()
-        if private_key:
+        if private_key is not None:
+            print('## Using sign_ps256')
             return sign_ps256(data, private_key)
         else:
+            print('## Using kms_sign')
             return kms_sign(data)
     except Exception as e:
         logging.error(e)

@@ -65,8 +65,12 @@ def get_signer_data_uri(env_file_path=None):
 # Generate a sign function from signer data returned by the url
 def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
     response = requests.get(uri)
+
     if response.status_code == 200:
         json_data = response.json()
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print(json_data)
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         certs = json_data["cert_chain"]
         # Convert certs string to bytes using UTF-8 encoding
         certs = base64.b64decode(certs.encode("utf-8"))
@@ -147,7 +151,13 @@ args = parser.parse_args()
 os.makedirs(args.output, exist_ok=True)
 
 uri = get_signer_data_uri(args.envfile)
+print('########################')
+print('uri to get remote signer data')
+print(uri)
+print('########################')
+
 signer = get_remote_signer(uri)
+
 
 # Sign each file and write to the output directory
 for file in args.files:
