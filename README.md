@@ -357,7 +357,7 @@ Confirm that the app signed the output image by doing one of these:
 
 ### Pre-requisites
 
-- Docker Desktop version 4.34.3 (170107) or later
+- Docker Desktop version 4.34.3 (170107) or later.
 
 ### Run the local setup
 
@@ -369,7 +369,7 @@ make local
 
 ### Re-run the python client
 
-In order to re-run the python client, you can do so by running the following command:
+In order to re-run the python client, run the following command:
 
 ```shell
 docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
