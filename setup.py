@@ -58,18 +58,24 @@ def read_env_params(env_file_path=None):
   if 'RUN_MODE' in app_config and run_mode == 'DEV':
       # Run in dev/local mode (eg. with LocalStack)
       endpoint_url = app_config['AWS_ENDPOINT_URL']
-      print(f'Running example in dev mode with endpoint: {endpoint_url}')
+      print(f'Running example setup in dev mode with endpoint: {endpoint_url}')
 
       region = app_config['AWS_REGION']
       aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
       aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
 
       # Use variables from .env file as parameter values
-      kms = boto3.client('kms',
-                          endpoint_url=endpoint_url,
-                          region_name=region,
-                          aws_access_key_id=aws_access_key_id,
-                          aws_secret_access_key=aws_secret_access_key)
+      try:
+        kms = boto3.client('kms',
+                            endpoint_url=endpoint_url,
+                            region_name=region,
+                            aws_access_key_id=aws_access_key_id,
+                            aws_secret_access_key=aws_secret_access_key)
+      except Exception as e:
+        print('Error during KMS client setup in dev mode')
+        print(e)
+        raise Exception('KMS dev setup failed: Error during KMS client setup in dev mode')
+
   else:
       # Example setup for use with AWS credentials setup (no LocalStack use)
       kms = boto3.client('kms')
@@ -86,11 +92,20 @@ def create_kms_key(env_file_path=None):
         print(f'Using default environment to build environment and KMS client')
         kms = read_env_params()
 
-    response = kms.create_key(
-        Description='C2PA Python KMS Demo Key',
-        KeyUsage='SIGN_VERIFY',
-        KeySpec='ECC_NIST_P256',
-    )
+
+    try:
+      if kms is not None:
+        response = kms.create_key(
+            Description='C2PA Python KMS Demo Key',
+            KeyUsage='SIGN_VERIFY',
+            KeySpec='ECC_NIST_P256',
+        )
+      else:
+        print('Error during KMS client setup')
+        raise Exception('No KMS key id generated (Error during KMS client setup)')
+    except Exception as e:
+      print(f'Error during KMS key creation: {e}')
+      raise Exception('No KMS key id generated (Error during KMS key creation)')
 
     key_id = response['KeyMetadata']['KeyId']
     print(f'Created KMS key: {key_id}')
@@ -106,6 +121,7 @@ def create_key_and_csr(subject, env_file_path=None):
     key_id = create_kms_key(env_file_path)
 
     if key_id is not None:
+        print(f'Generating KMS key with subject: {subject}')
         generate_certificate_request(key_id, subject, env_file_path)
     else:
         print('Error during KMS key ID generation')
