@@ -34,7 +34,7 @@ hash_alg = 'ECDSA_SHA_256'
 # [^1]: https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.SignatureAlgorithmOID.ECDSA_WITH_SHA256
 sign_oid = '1.2.840.10045.4.3.2'
 csr_file = 'kms-signing.csr'
-config_file_name = 'config.json'
+json_config_filename = 'config.json'
 
 
 def read_env_params(env_file_path=None):
@@ -111,7 +111,8 @@ def create_kms_key(env_file_path=None):
     print(f'Created KMS key: {key_id}')
     print(f'Consider setting an environment variable: `export KMS_KEY_ID={key_id}`')
 
-    open(config_file_name, 'wt').write(json.dumps({'kms_key_id': key_id}))
+    # TODO-TMN: Put kms_key_id in local env file too
+    open(json_config_filename, 'wt').write(json.dumps({'kms_key_id': key_id}))
 
     return key_id
 
@@ -207,6 +208,7 @@ def generate_certificate_request(kms_key: str, subject: str, env_file_path=None)
         'signature', univ.BitString.fromOctetString(signature))
     build_output(csr_request)
 
+    # TODO-TMN: Keep CSR request filepath at hand
     with open(csr_file, "w") as f:
         f.write(build_output(csr_request))
 
