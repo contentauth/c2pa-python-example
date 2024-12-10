@@ -66,7 +66,7 @@ else:
     signing_alg_str = 'ES256'
 
     if 'RUN_MODE' in app_config and app_config['RUN_MODE'] == 'DEV':
-        # For use with Localstack
+        # For use with Localstack in (local) dev mode
         endpoint_url = app_config['AWS_ENDPOINT_URL']
         print(f'Running example in dev mode with endpoint: {endpoint_url}')
         region = app_config['AWS_REGION']
@@ -180,10 +180,10 @@ def sign():
     try:
         data = request.get_data()
         if private_key is not None:
-            print('## Using sign_ps256')
+            print('Using sign_ps256')
             return sign_ps256(data, private_key)
         else:
-            print('## Using kms_sign')
+            print('Using kms_sign')
             return kms_sign(data)
     except Exception as e:
         logging.error(e)
