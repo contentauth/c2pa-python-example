@@ -51,8 +51,10 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
     print('Using local test certs for signing')
 
+    # TODO-TMN Make this configurable, so certs can be injected without replacing those
     private_key = open('tests/certs/ps256.pem', 'rb').read()
     cert_chain = open('tests/certs/ps256.pub', 'rb').read()
+
     encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
     signing_alg_str = 'PS256'
 else:
