@@ -128,11 +128,11 @@ def create_kms_key(env_file_path=None):
 
         if env_file_to_use is not None:
           set_key(env_file_to_use, "KMS_KEY_ID", key_id)
-          print(f'KMS_KEY_ID value to update in .env file set as parameter: {env_file_to_use}')
+          print(f'KMS_KEY_ID value updated in .env file {env_file_to_use}')
         else:
-          print("KMS_KEY_ID value update: No env file found to update")
+          print("No env file found to add KMS_KEY_ID to")
     except:
-      print("KMS_KEY_ID value update: Could not update env file to include KMS_KEY_ID of generated KMS key")
+      print("Could not update any .env file to include a KMS_KEY_ID with the generated KMS key as matching value")
 
     return key_id
 
