@@ -328,8 +328,7 @@ By default, when this command is run from the root of this repository, this will
     Using KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
     Using certificate chain: chain.pem
     Press CTRL+C to stop the server
-    INFO:waitress:Serving on http://127.0.0.1:5000
-    INFO:waitress:Serving on http://[::1]:5000
+    INFO:waitress:Serving on http://0.0.0.0:5000
     ```
 
 2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:
