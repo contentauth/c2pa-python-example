@@ -118,19 +118,19 @@ def create_kms_key(env_file_path=None):
       if env_file_path is not None:
         # Use defined env file path
         set_key(env_file_path, "KMS_KEY_ID", key_id)
-        
       else:
         # Is there an env file location defined in the env vars?
         env_file_to_use = os.environ.get('ENV_FILE_PATH')
-        print(f'KMS_KEY_ID value updated in .env file set as parameter: {env_file_to_use}')
         if env_file_to_use is None:
             # Env file defined in env vars, we'll place the key there
             env_file_to_use = find_dotenv(filename='.env', raise_error_if_not_found=False, usecwd=False)
-            print(f'KMS_KEY_ID value updated in found default .env file: {env_file_to_use}')
-        else:
-            print(f'KMS_KEY_ID value updated in env file set in environment variables: {env_file_to_use}')
         # Update local env file with KMS_KEY_ID
-        set_key(env_file_to_use, "KMS_KEY_ID", key_id)
+
+        if env_file_to_use is not None:
+          set_key(env_file_to_use, "KMS_KEY_ID", key_id)
+          print(f'KMS_KEY_ID value to update in .env file set as parameter: {env_file_to_use}')
+        else:
+          print("KMS_KEY_ID value update: No env file found to update")
     except:
       print("KMS_KEY_ID value update: Could not update env file to include KMS_KEY_ID of generated KMS key")
 
