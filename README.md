@@ -320,16 +320,16 @@ By default, when this command is run from the root of this repository, this will
     python3 app.py
     ```
 
-    You'll see a response like this:
+    You'll see a response like this:``
 
     ```shell
+    Using KMS for signing
+    Running example in dev mode with AWS endpoint: http://localhost.localstack.cloud:4566/
     Using KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Using certificate chain: ./chain.pem
-    * Debug mode: off
-    WARNING: This is a development server. Do not use it in a production deployment.
-    Use a production WSGI server instead.
-    * Running on http://127.0.0.1:5000
-    Press CTRL+C to quit
+    Using certificate chain: chain.pem
+    Press CTRL+C to stop the server
+    INFO:waitress:Serving on http://127.0.0.1:5000
+    INFO:waitress:Serving on http://[::1]:5000
     ```
 
 2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:

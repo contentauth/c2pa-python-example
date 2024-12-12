@@ -71,7 +71,7 @@ else:
     if 'RUN_MODE' in app_config and app_config['RUN_MODE'] == 'DEV':
         # For use with Localstack in (local) dev mode
         endpoint_url = app_config['AWS_ENDPOINT_URL']
-        print(f'Running example in dev mode with endpoint: {endpoint_url}')
+        print(f'Running example in dev mode with AWS endpoint: {endpoint_url}')
         region = app_config['AWS_REGION']
         aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
         aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
@@ -200,12 +200,14 @@ if __name__ == '__main__':
         app_config = dotenv_values(env_file_path)
 
     port = 5000
-    host = 'localhost'
+    host = '0.0.0.0'
     if app_config is not None:
         if 'APP_HOST_PORT' in app_config:
             port = app_config['APP_HOST_PORT']
         if 'APP_ENDPOINT' in app_config:
             host = app_config['APP_ENDPOINT']
+
+    print('Press CTRL+C to stop the server')
 
     #app.run(debug=True)
     serve(app, host=host, port=port)
