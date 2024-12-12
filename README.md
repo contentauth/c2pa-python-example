@@ -152,7 +152,7 @@ For more information on identity and access management with LocalStack, see the 
 
 NOTE: Amazon KMS uses Distinguished Encoding Rules (DER) encoding for cryptographic keys. The C2PA specification does not provide for DER support, but the CAI open-source SDK automatically converts it to a supported format.
 
-### Use an existing KMS key
+#### Use an existing KMS key
 
 If you have an existing KMS key that you want to use for signing, follow these steps to generate a CSR:
 
@@ -176,7 +176,7 @@ If you have an existing KMS key that you want to use for signing, follow these s
     "C=US,ST=NY,L=NeW York,O=EXACT ORGANIZATION NAME,CN=EXACT ORGANIZATION NAME"
     ```
 
-### Generate a KMS key and CSR
+#### Generate a KMS key and CSR
 
 If you don't have an existing KMS key, follow these steps to generate a KMS key and CSR:
 
