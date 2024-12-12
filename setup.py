@@ -119,12 +119,11 @@ def create_kms_key(env_file_path=None):
         # Use defined env file path
         set_key(env_file_path, "KMS_KEY_ID", key_id)
       else:
-        # Is there an env file location defined in the env vars?
+        # Env file defined in env vars, we'll place the key there
         env_file_to_use = os.environ.get('ENV_FILE_PATH')
         if env_file_to_use is None:
-            # Env file defined in env vars, we'll place the key there
-            env_file_to_use = find_dotenv(filename='.env', raise_error_if_not_found=False, usecwd=False)
-        # Update local env file with KMS_KEY_ID
+            # Look for default .env file, if any
+            env_file_to_use = find_dotenv(filename='.env', raise_error_if_not_found=False)
 
         if env_file_to_use is not None:
           set_key(env_file_to_use, "KMS_KEY_ID", key_id)
