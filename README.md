@@ -375,9 +375,11 @@ The command will first build and then run the containers as described in the [do
 3. The signing server starts with default configuration in the `local-signer` container.
 4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container.
 
-After the `make local` script has finished running, your shell should show a result similar to this:
+After the `make local` script has finished running, the bottom of your shell should show a result similar to this:
 
 ```shell
+(...Docker images build details...)
+
 --- Running containers.........
 
 docker compose up -d
