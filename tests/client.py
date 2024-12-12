@@ -104,6 +104,7 @@ def make_thumbnail(file: str) -> io.BytesIO:
         return buffer
 
 
+# Example manifest
 manifest = json.dumps({
     "claim_generator_info": [
         {
@@ -129,6 +130,7 @@ manifest = json.dumps({
     ]
 })
 
+# Example of a manifest ingredient
 ingredient_json = {
     "relationship": "parentOf",
     "title": "",
@@ -162,5 +164,11 @@ for file in args.files:
     ingredient_json["title"] = os.path.basename(file)
     builder.add_ingredient_file(ingredient_json, file)
     builder.add_resource("thumbnail", make_thumbnail(file))
-    builder.sign_file(signer, file, output_file)
-    print(f"Signed {file} and saved to {output_file}")
+
+    try:
+        builder.sign_file(signer, file, output_file)
+        print(f"Signed {file} and saved to {output_file}")
+    except Exception as e:
+        # Signing fails if there is an existing destination file with the same name,
+        # as we don't override existing files
+        print(f"Failed to sign {file}: {e}")
