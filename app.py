@@ -51,9 +51,24 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development
     print('Using local test certs for signing')
 
-    # TODO-TMN Make this configurable, so certs can be injected without replacing those
-    private_key = open('tests/certs/ps256.pem', 'rb').read()
-    cert_chain = open('tests/certs/ps256.pub', 'rb').read()
+    env_ps256_pem_path = os.environ.get('PS256_PEM_PATH_PYTHON_EXAMPLE')
+    env_cert_chain_path = os.environ.get('CERT_CHAIN_PATH_PYTHON_EXAMPLE')
+    ps256_pem_path = 'tests/test-certs/ps256.pem'
+    cert_chain_path = 'tests/test-certs/ps256.pub'
+
+    if env_ps256_pem_path is not None and env_cert_chain_path is not None:
+        print(f"Using certificates pointed to by env variables {env_ps256_pem_path} and {env_cert_chain_path}")
+        ps256_pem_path = env_ps256_pem_path
+        cert_chain_path = env_cert_chain_path
+    elif os.path.exists(ps256_pem_path) and os.path.exists(cert_chain_path):
+        print(f"Using certificates added locally to this repo {ps256_pem_path} and {cert_chain_path}")
+    else:
+        print("Using provided default test certificates and certificate chain")
+        ps256_pem_path = 'tests/certs/ps256.pem'
+        cert_chain_path = 'tests/certs/ps256.pub'
+
+    private_key = open(ps256_pem_path, 'rb').read()
+    cert_chain = open(cert_chain_path, 'rb').read()
 
     encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
     signing_alg_str = 'PS256'
@@ -61,8 +76,8 @@ else:
     print('Using KMS for signing')
 
     kms_key_id = app_config['KMS_KEY_ID']
-    cert_chain_path = app_config['CERT_CHAIN_PATH']
 
+    cert_chain_path = app_config['CERT_CHAIN_PATH']
     cert_chain = open(cert_chain_path, 'rb').read()
     encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
     signing_alg_str = 'ES256'
