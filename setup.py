@@ -227,7 +227,7 @@ def generate_certificate_request(kms_key: str, subject: str, env_file_path=None)
         'signature', univ.BitString.fromOctetString(signature))
     build_output(csr_request)
 
-    # TODO-TMN: Keep CSR request filepath at hand
+    os.environ['CSR_FILEPATH_EXAMPLE'] = csr_file
     with open(csr_file, "w") as f:
         f.write(build_output(csr_request))
 

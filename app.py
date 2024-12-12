@@ -60,7 +60,6 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
 else:
     print('Using KMS for signing')
 
-    # TODO-TMN: This could optionally be set by the setup script
     kms_key_id = app_config['KMS_KEY_ID']
     cert_chain_path = app_config['CERT_CHAIN_PATH']
 
