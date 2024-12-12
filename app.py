@@ -48,7 +48,7 @@ CORS(app)
 private_key = None
 
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
-    # local test certs for development
+    # local test certs for development (and test client)
     print('Using local test certs for signing')
 
     env_ps256_pem_path = os.environ.get('PS256_PEM_PATH_PYTHON_EXAMPLE')
@@ -101,8 +101,7 @@ else:
         session = boto3.Session()
         kms = session.client('kms')
 
-
-    print('Using KMS key: ' + kms_key_id)
+    print(f'Using KMS key: {kms_key_id}' + kms_key_id)
     print('Using certificate chain: ' + cert_chain_path)
 
 # Allow configuration of the timestamp URL
