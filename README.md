@@ -148,7 +148,7 @@ Confirm that:
 
 For more information on identity and access management with LocalStack, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/aws/iam/).
 
-## Get KMS key and CSR
+### Get KMS key and CSR
 
 NOTE: Amazon KMS uses Distinguished Encoding Rules (DER) encoding for cryptographic keys. The C2PA specification does not provide for DER support, but the CAI open-source SDK automatically converts it to a supported format.
 
@@ -209,7 +209,7 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
     export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
     ```
 
-## Get certificate
+### Get a certificate for signing
 
 When purchasing a certificate and key, you might be able to simply click a "Buy" button on the CA's website. Or your can make your own key, create an CSR, and send it to CA.  In either case what comes back is the signed certificate that you use to create a certificate chain.
 
@@ -302,7 +302,7 @@ The [`openssl x509 -req`](https://docs.openssl.org/master/man1/openssl-x509/) co
 | -days 365 | Specifies that the newly-generated certificate expires in 365 days. |
 | -copy_extensions copyall | Copy all extensions, except that subject identifier and authority key identifier extensions. |
 
-## Create certificate chain
+### Create certificate chain
 
 Create certificate chain file PEM with certificate issued by CA and CA Root certificate. For example, with the self-signed certificate:
 
@@ -312,7 +312,7 @@ cat kms-signing.crt rootCA.crt > chain.pem
 
 By default, when this command is run from the root of this repository, this will place the certificate chain in the root of this repository (file named `chain.pem`). As a reminder, this `chain.pem` file is a chain of certificates (and not a signing key).
 
-## Run the application
+### Run the application
 
 1. Run the application by entering this command:
 
@@ -331,7 +331,7 @@ By default, when this command is run from the root of this repository, this will
     INFO:waitress:Serving on http://0.0.0.0:5000
     ```
 
-2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:
+2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:
 
     ```shell
     curl -X POST -T "<PATH_TO_JPEG>" -o <SIGNED_FILE_NAME>.jpg 'http://localhost:5000/attach'
@@ -352,7 +352,7 @@ Confirm that the app signed the output image by doing one of these:
 - If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
 
-## Docker Setup
+## Setting up to run the example using Docker
 
 ### Pre-requisites
 

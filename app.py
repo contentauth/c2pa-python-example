@@ -110,11 +110,12 @@ if 'TIMESTAMP_URL' in app_config and app_config['TIMESTAMP_URL']:
 else:
     timestamp_url = 'http://timestamp.digicert.com' # Default timestamp URL (change to None later?)
 
-# todo: Get signing_alg_str from env when we support more algorithms
+# TODO: Get signing_alg_str from env when we support more algorithms
 try:
     signing_alg = getattr(SigningAlg, signing_alg_str)
 except AttributeError:
     raise ValueError(f"Unsupported signing algorithm: {signing_alg_str}")
+
 
 @app.route("/attach", methods=["POST"])
 def resize():
@@ -204,6 +205,7 @@ def sign():
     except Exception as e:
         logging.error(e)
         abort(500, description=e)
+
 
 if __name__ == '__main__':
     app_config = None
