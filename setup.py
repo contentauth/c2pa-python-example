@@ -111,10 +111,10 @@ def create_kms_key(env_file_path=None):
     print(f'Created KMS key: {key_id}')
     print(f'Consider setting an environment variable: `export KMS_KEY_ID={key_id}`')
 
-    # TODO-TMN: Put kms_key_id in local env file too
     open(json_config_filename, 'wt').write(json.dumps({'kms_key_id': key_id}))
 
     try:
+      os.environ['KMS_KEY_ID'] = key_id
       if env_file_path is not None:
         # Use defined env file path
         set_key(env_file_path, "KMS_KEY_ID", key_id)
