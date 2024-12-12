@@ -8,13 +8,16 @@ COPY . .
 
 ENTRYPOINT [ "python" ]
 
+
 FROM build AS app
 
 ENTRYPOINT [ "python", "app.py" ]
 
+
 FROM build AS client
 
 ENTRYPOINT [ "python", "tests/client.py", "./tests/A.jpg", "-o", "client_volume/signed-images" ]
+
 
 FROM build AS local-setup
 
