@@ -54,7 +54,7 @@ Open a terminal window and follow these steps:
 
 ## Setting up to run the example using Docker
 
-The example code from this repository can run inside of Docker containers with default provided configurations. This is the quickest way to spin up a working development environment (without doing additional configuration!).
+The example code from this repository can run inside of Docker containers with default provided configurations. This is the quickest way to spin up a working development environment (without doing additional configuration!). This is a development setup and should not be deployed as-is to a production environment.
 
 ### Pre-requisites
 
@@ -91,7 +91,7 @@ docker compose up -d
  ✔ Container local-client               Started
 ```
 
-### Re-run the python client
+### Re-run the python client container
 
 In order to re-run the python client, run the following command from the root of this repository:
 
@@ -125,7 +125,9 @@ docker compose down --volumes --remove-orphans
  ✔ Network c2pa-python-example_default    Removed
 ```
 
-## Setting up to run the example manually & locally
+## Setting up to run the example manually
+
+These steps show and explain the details of running the signer example locally directly on your machine. This is a development setup and should not be deployed as-is to a production environment.
 
 ### Set up with AWS credentials
 
