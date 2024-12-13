@@ -373,7 +373,7 @@ The command will first build and then run the containers as described in the [do
 1. Localstack is used and will run to mock AWS infrastructure inside a container called `localstack-main`.
 2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (eg. creating mocked AWS users in Localstack and needed certificate infrastructure). The container exits once the setup is done.
 3. The signing server starts with default configuration in the `local-signer` container.
-4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a folder created at the root of this repo, `client_volume/signed_images`. 
+4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a folder created at the root of this repo, `client_volume/signed_images`.
 
 After the `make local` script has finished running, the bottom of your shell should show a result similar to this:
 

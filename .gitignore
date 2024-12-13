@@ -16,3 +16,4 @@ local_volume/
 client_volume/
 tests/test-certs/*
 !tests/test-certs/.gitkeep
+!example.env
