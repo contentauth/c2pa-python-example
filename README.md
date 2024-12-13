@@ -197,8 +197,6 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
 
     ```shell
     Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Consider setting an environment variable:
-    `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
 
     By default, when the setup.py script command is run from the root of this repository, this will create a file name `kms-signing.csr` at the root of the repository. The setup.py script will also add add the value of the generated key id to a local `.env` file under the key `KMS_KEY_ID`.
@@ -370,8 +368,8 @@ make local
 
 The command will first build and then run the containers as described in the [docker-compose file](docker-compose.yaml):
 
-1. Localstack is used and will run to mock AWS infrastructure inside a container called `localstack-main`.
-2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (eg. creating mocked AWS users in Localstack and needed certificate infrastructure). The container exits once the setup is done.
+1. LocalStack is used and will run to mock AWS infrastructure inside a container called `localstack-main`.
+2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (eg. creating mocked AWS users in LocalStack and needed certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference in a folder named `config_volume` at the root of this repository. Note that changing the values of the configurations in this folder does not affect the running docker setup, and is not used after restarting it either.
 3. The signing server starts with default configuration in the `local-signer` container.
 4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a folder created at the root of this repo, `client_volume/signed_images`.
 

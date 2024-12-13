@@ -34,7 +34,6 @@ hash_alg = 'ECDSA_SHA_256'
 # [^1]: https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.SignatureAlgorithmOID.ECDSA_WITH_SHA256
 sign_oid = '1.2.840.10045.4.3.2'
 csr_file = 'kms-signing.csr'
-json_config_filename = 'config.json'
 
 
 def read_env_params(env_file_path=None):
@@ -108,13 +107,16 @@ def create_kms_key(env_file_path=None):
       raise Exception('No KMS key id generated (Error during KMS key creation)')
 
     key_id = response['KeyMetadata']['KeyId']
-    print(f'Created KMS key: {key_id}')
-    print(f'Consider setting an environment variable: `export KMS_KEY_ID={key_id}`')
 
-    open(json_config_filename, 'wt').write(json.dumps({'kms_key_id': key_id}))
+    if key_id is None:
+      print('Error during KMS key creation')
+      raise Exception('No KMS key id generated')
+
+    print(f'Created KMS key: {key_id}')
+    os.environ['KMS_KEY_ID'] = key_id
+    print(f'Set KMS_KEY_ID environment variable to the generated KMS key ID {key_id}')
 
     try:
-      os.environ['KMS_KEY_ID'] = key_id
       if env_file_path is not None:
         # Use defined env file path
         set_key(env_file_path, "KMS_KEY_ID", key_id)
@@ -131,7 +133,8 @@ def create_kms_key(env_file_path=None):
         else:
           print("No env file found to add KMS_KEY_ID to")
     except:
-      print("Could not update any .env file to include a KMS_KEY_ID with the generated KMS key as matching value")
+      print("Could not update any .env file to include a KMS_KEY_ID with the generated KMS key ID as matching value")
+      print(f'Consider setting an environment variable instead: `export KMS_KEY_ID={key_id}`')
 
     return key_id
 
