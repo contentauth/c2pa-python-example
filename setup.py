@@ -71,7 +71,7 @@ def read_env_params(env_file_path=None):
                             aws_access_key_id=aws_access_key_id,
                             aws_secret_access_key=aws_secret_access_key)
       except Exception as e:
-        print('Error during KMS client setup in dev mode')
+        print('Error during KMS client setup in dev mode:')
         print(e)
         raise Exception('KMS dev setup failed: Error during KMS client setup in dev mode')
 
@@ -230,7 +230,6 @@ def generate_certificate_request(kms_key: str, subject: str, env_file_path=None)
         'signature', univ.BitString.fromOctetString(signature))
     build_output(csr_request)
 
-    os.environ['CSR_FILEPATH_EXAMPLE'] = csr_file
     with open(csr_file, "w") as f:
         f.write(build_output(csr_request))
 
