@@ -52,7 +52,7 @@ Open a terminal window and follow these steps:
     ...
     ```
 
-## Setting up to run the example using Docker
+## Setting up to run the example with default configurations using Docker
 
 The example code from this repository can run inside of Docker containers with default provided configurations. This is the quickest way to spin up a working development environment (without doing additional configuration!). This is a development setup and should not be deployed as-is to a production environment.
 
