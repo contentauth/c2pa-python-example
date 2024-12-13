@@ -52,6 +52,79 @@ Open a terminal window and follow these steps:
     ...
     ```
 
+## Setting up to run the example using Docker
+
+The example code from this repository can run inside of Docker containers with default provided configurations. This is the quickest way to spin up a working development environment (without doing additional configuration!).
+
+### Pre-requisites
+
+The example can run using Docker Desktop version 4.34.3 (170107) or later.
+
+### Run the local setup
+
+To run the example setup inside of Docker containers, you need to build and run the needed containers. To facilitate this, from the root of this repository, run the command:
+
+```shell
+make local
+```
+
+The command will first build and then run the containers as described in the [docker-compose file](docker-compose.yaml):
+
+1. LocalStack is used and will run to mock AWS infrastructure inside a container called `localstack-main`.
+2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (eg. creating mocked AWS users in LocalStack and needed certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference in a folder named `config_volume` at the root of this repository. Note that changing the values of the configurations in this folder does not affect the running docker setup, and is not used after restarting it either.
+3. The signing server starts with default configuration in the `local-signer` container.
+4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a folder created at the root of this repo, `client_volume/signed_images`.
+
+After the `make local` script has finished running, the bottom of your shell should show a result similar to this:
+
+```shell
+(...Docker images build details...)
+
+--- Running containers.........
+
+docker compose up -d
+[+] Running 5/5
+ ✔ Network c2pa-python-example_default  Created                                                              0.0s
+ ✔ Container localstack-main            Started                                                              0.3s
+ ✔ Container local-setup                Exited                                                               0.8s
+ ✔ Container local-signer               Healthy                                                              6.4s
+ ✔ Container local-client               Started
+```
+
+### Re-run the python client
+
+In order to re-run the python client, run the following command from the root of this repository:
+
+```shell
+docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
+```
+
+Make sure to replace `./tests/A.jpg` with the path to the image you want to sign.
+
+### Cleanup the local setup
+
+Once you've finished trying out the example, don't forget to stop and remove the containers. This can be done by running at the root of this repository:
+
+```shell
+make clean
+```
+
+Once the clean-up is done, your shell should show something similar to:
+
+```shell
+
+--- Cleaning up.................
+
+docker compose down --volumes --remove-orphans
+[+] Running 6/6
+ ✔ Container local-client                 Removed                                                            0.0s 
+ ✔ Container local-signer                 Removed                                                           10.1s 
+ ✔ Container localstack-main              Removed                                                            1.1s 
+ ✔ Container local-setup                  Removed                                                            0.0s 
+ ✔ Volume c2pa-python-example_local-data  Removed                                                            0.0s 
+ ✔ Network c2pa-python-example_default    Removed
+```
+
 ## Setting up to run the example manually & locally
 
 ### Set up with AWS credentials
@@ -349,76 +422,3 @@ Confirm that the app signed the output image by doing one of these:
 
 - If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
-
-## Setting up to run the example using Docker
-
-The example code from this repository with default settings can run inside of Docker containers with default configurations. This is useful to quickly spin up a development environment.
-
-### Pre-requisites
-
-The example can run using Docker Desktop version 4.34.3 (170107) or later.
-
-### Run the local setup
-
-To run the example setup inside of Docker, you need to build and run the needed containers. To facilitate this, from the root of this repository, run the command:
-
-```shell
-make local
-```
-
-The command will first build and then run the containers as described in the [docker-compose file](docker-compose.yaml):
-
-1. LocalStack is used and will run to mock AWS infrastructure inside a container called `localstack-main`.
-2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (eg. creating mocked AWS users in LocalStack and needed certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference in a folder named `config_volume` at the root of this repository. Note that changing the values of the configurations in this folder does not affect the running docker setup, and is not used after restarting it either.
-3. The signing server starts with default configuration in the `local-signer` container.
-4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a folder created at the root of this repo, `client_volume/signed_images`.
-
-After the `make local` script has finished running, the bottom of your shell should show a result similar to this:
-
-```shell
-(...Docker images build details...)
-
---- Running containers.........
-
-docker compose up -d
-[+] Running 5/5
- ✔ Network c2pa-python-example_default  Created                                                              0.0s
- ✔ Container localstack-main            Started                                                              0.3s
- ✔ Container local-setup                Exited                                                               0.8s
- ✔ Container local-signer               Healthy                                                              6.4s
- ✔ Container local-client               Started
-```
-
-### Re-run the python client
-
-In order to re-run the python client, run the following command from the root of this repository:
-
-```shell
-docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
-```
-
-Make sure to replace `./tests/A.jpg` with the path to the image you want to sign.
-
-### Cleanup the local setup
-
-Once you've finished trying out the example, don't forget to stop and remove the containers. This can be done by running at the root of this repository:
-
-```shell
-make clean
-```
-
-Once the clean-up is done, your shell should show something similar to:
-
-```shell
-
---- Cleaning up.................
-
-docker compose down --volumes --remove-orphans
-[+] Running 6/6
- ✔ Container local-client                 Removed                                                            0.0s 
- ✔ Container local-signer                 Removed                                                           10.1s 
- ✔ Container localstack-main              Removed                                                            1.1s 
- ✔ Container local-setup                  Removed                                                            0.0s 
- ✔ Volume c2pa-python-example_local-data  Removed                                                            0.0s 
- ✔ Network c2pa-python-example_default    Removed
-```
