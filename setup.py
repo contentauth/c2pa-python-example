@@ -16,7 +16,7 @@ import os
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.x509 import Name, CertificateSigningRequestBuilder, NameAttribute, SignatureAlgorithmOID, ExtensionType, OID_TIME_STAMPING, OID_CODE_SIGNING, OID_KEY_USAGE, OID_EXTENDED_KEY_USAGE, OID_BASIC_CONSTRAINTS
+from cryptography.x509 import Name, CertificateSigningRequestBuilder
 from cryptography.hazmat.primitives.asymmetric import ec
 from pathlib import Path
 import json
