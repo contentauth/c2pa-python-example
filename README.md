@@ -276,12 +276,6 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
 
     By default, when the setup.py script command is run from the root of this repository, this will create a file name `kms-signing.csr` at the root of the repository. The setup.py script will also add add the value of the generated key id to a local `.env` file under the key `KMS_KEY_ID`.
 
-1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
-
-    ```shell
-    export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
-    ```
-
 ### Get a certificate for signing
 
 When purchasing a certificate and key, you might be able to simply click a "Buy" button on the CA's website. Or your can make your own key, create an CSR, and send it to CA.  In either case what comes back is the signed certificate that you use to create a certificate chain.

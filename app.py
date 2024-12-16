@@ -119,6 +119,8 @@ except AttributeError:
 
 @app.route("/attach", methods=["POST"])
 def resize():
+    """Gets a JPEG image to sign and returns the signed JPEG image"""
+
     request_data = request.get_data()
     content_type = request.headers.get('Content-Type', 'image/jpeg')  # Default to 'image/jpeg' if not provided
 
@@ -166,17 +168,23 @@ def resize():
 
 # Uses KMS to sign
 def kms_sign(data: bytes) -> bytes:
+    """Signs the data using a KMS key id"""
+
     hashed_data = sha256(data).digest()
     return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
 
 
 @app.route("/health", methods=["GET"])
 def hello_world():
+    """Health check endpoint"""
+
     return "<p>Healthy!</p>"
 
 
 @app.route("/signer_data", methods=["GET"])
 def signer_data():
+    """Returns the signer data/signer information needed for (remote) signing"""
+
     logging.info('Getting signer data')
     try:
         data = json.dumps({
@@ -193,6 +201,9 @@ def signer_data():
 
 @app.route("/sign", methods=["POST"])
 def sign():
+    """ Signs the data using a private key if one is set/found,
+        otherwise uses KMS to sign the input data. """
+
     logging.info('Signing data')
     try:
         data = request.get_data()
@@ -209,11 +220,14 @@ def sign():
 
 if __name__ == '__main__':
     app_config = None
+
+    # Setup environment with needed variables
     env_file_path = os.environ.get('ENV_FILE_PATH')
     if env_file_path is not None:
         print(f'Loading environment variables for server from {env_file_path} file defined in env vars')
         app_config = dotenv_values(env_file_path)
 
+    # Run the server
     port = 5000
     host = '0.0.0.0'
     if app_config is not None:
@@ -224,5 +238,6 @@ if __name__ == '__main__':
 
     print('Press CTRL+C to stop the server')
 
-    #app.run(debug=True)
+    # For additional debugging info, uncomment the line below:
+    # app.run(debug=True)
     serve(app, host=host, port=port)

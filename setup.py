@@ -18,7 +18,6 @@ from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509 import Name, CertificateSigningRequestBuilder
 from cryptography.hazmat.primitives.asymmetric import ec
-from pathlib import Path
 
 
 # Load environment variable from .env file
@@ -36,6 +35,8 @@ csr_file = 'kms-signing.csr'
 
 
 def read_env_params(env_file_path=None):
+  """Read environment variables from a given file path or default .env file"""
+
   if env_file_path is not None:
       print(f'Loading environment variables from: {env_file_path}')
       app_config = dotenv_values(dotenv_path=env_file_path)
@@ -82,6 +83,8 @@ def read_env_params(env_file_path=None):
 
 
 def create_kms_key(env_file_path=None):
+    """Create KMS key and set environment variables (KMS key ID)."""
+
     kms = None
     if env_file_path is not None:
         print(f'Using env variables from {env_file_path} to build environment and KMS client')
@@ -140,6 +143,8 @@ def create_kms_key(env_file_path=None):
 # Example call: python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo' './my-env-file.env'
 @arguably.command
 def create_key_and_csr(subject, env_file_path=None):
+    """Create KMS key anc CSR signing request file using generated KMS key"""
+
     key_id = create_kms_key(env_file_path)
 
     if key_id is not None:
@@ -152,6 +157,8 @@ def create_key_and_csr(subject, env_file_path=None):
 
 @arguably.command
 def generate_certificate_request(kms_key: str, subject: str, env_file_path=None):
+    """Generate CSR signing request file using a kMS key"""
+
     if env_file_path is not None:
         print(f'Using env variables from {env_file_path} to build environment and KMS client')
         kms = read_env_params(env_file_path)
@@ -234,6 +241,8 @@ def generate_certificate_request(kms_key: str, subject: str, env_file_path=None)
 
 
 def build_output(csr):
+    """Output content to a file (used in the example for CSR)"""
+
     out = start_marker + '\n'
     b64 = base64.b64encode(encoder.encode(csr)).decode('ascii')
     for line in textwrap.wrap(b64, width=64):
