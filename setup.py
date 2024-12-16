@@ -19,7 +19,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.x509 import Name, CertificateSigningRequestBuilder
 from cryptography.hazmat.primitives.asymmetric import ec
 from pathlib import Path
-import json
 
 
 # Load environment variable from .env file
