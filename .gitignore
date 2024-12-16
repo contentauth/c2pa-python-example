@@ -18,3 +18,4 @@ config_volume/
 tests/test-certs/*
 !tests/test-certs/.gitkeep
 !example.env
+!env-var-documentation.env
