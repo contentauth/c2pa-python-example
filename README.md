@@ -52,30 +52,32 @@ Open a terminal window and follow these steps:
     ...
     ```
 
-## Setting up to run the example with default configurations using Docker
+## Setup to use Docker
 
-The example code from this repository can run inside of Docker containers with default provided configurations. This is the quickest way to spin up a working development environment (without doing additional configuration!). This is a development setup and should not be deployed as-is to a production environment.
+The example code from this repository can run in Docker containers with default  configurations. The Docker containers use LocalStack to run a localized environment that simulates interactions with AWS. This is the quickest way to spin up a working development environment (without doing additional configuration.) 
 
-### Pre-requisites
+NOTE: This is a development setup and should not be deployed as-is to a production environment.
 
-The example can run using Docker Desktop version 4.34.3 (170107) or later.
+### Prerequisites
+
+You must have Docker Desktop version 4.34.3 (170107) or later.
 
 ### Run the local setup
 
-To run the example setup inside of Docker containers, you need to build and run the needed containers. To facilitate this, from the root of this repository, run the command:
+Build and run the Docker containers by entering this command:
 
 ```shell
 make local
 ```
 
-The command will first build and then run the containers as described in the [docker-compose file](docker-compose.yaml):
+The command will first build and then run the containers using the [docker-compose file](docker-compose.yaml), which does the following:
 
-1. LocalStack is used and will run to mock AWS infrastructure inside a container called `localstack-main`.
-2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (eg. creating mocked AWS users in LocalStack and needed certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference in a folder named `config_volume` at the root of this repository. Note that changing the values of the configurations in this folder does not affect the running docker setup, and is not used after restarting it either.
+1. Uses LocalStack to run a mock AWS infrastructure in a container called `localstack-main`.
+2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (for example, creating mocked AWS users in LocalStack and certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference to the `config_volume` directory in the root of this repository. Note that changing the values of the configurations in this directory does not affect the running Docker setup, nor after restarting it.
 3. The signing server starts with default configuration in the `local-signer` container.
-4. Once the signing server is ready, the example runs a self-check using the provided Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a folder created at the root of this repo, `client_volume/signed_images`.
+4. Once the signing server is ready, the example runs a self-check using the Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a directory created at the root of this repo, `client_volume/signed_images`.
 
-After the `make local` script has finished running, the bottom of your shell should show a result similar to this:
+When the `make local` command finishes, it displays something like this:
 
 ```shell
 (...Docker images build details...)
@@ -91,25 +93,25 @@ docker compose up -d
  ✔ Container local-client               Started
 ```
 
-### Re-run the python client container
+### Re-run the Python client container
 
-In order to re-run the python client, run the following command from the root of this repository:
+To re-run the Python client, enter the following command from the root of this repository:
 
 ```shell
-docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
+docker compose run --entrypoint "Python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
 ```
 
-Make sure to replace `./tests/A.jpg` with the path to the image you want to sign.
+Replace `./tests/A.jpg` with the path to the image you want to sign.
 
-### Cleanup the local setup
+### Clean up the local setup
 
-Once you've finished trying out the example, don't forget to stop and remove the containers. This can be done by running at the root of this repository:
+After trying out the example, be sure to stop and remove the containers by running this command at the root of this repository:
 
 ```shell
 make clean
 ```
 
-Once the clean-up is done, your shell should show something similar to:
+Once the cleanup is done, you'll see messages similar to this:
 
 ```shell
 
@@ -121,13 +123,13 @@ docker compose down --volumes --remove-orphans
  ✔ Container local-signer                 Removed                                                           10.1s 
  ✔ Container localstack-main              Removed                                                            1.1s 
  ✔ Container local-setup                  Removed                                                            0.0s 
- ✔ Volume c2pa-python-example_local-data  Removed                                                            0.0s 
- ✔ Network c2pa-python-example_default    Removed
+ ✔ Volume c2pa-Python-example_local-data  Removed                                                            0.0s 
+ ✔ Network c2pa-Python-example_default    Removed
 ```
 
-## Setting up to run the example manually
+## Setting up to run the example locally
 
-These steps show and explain the details of running the signer example locally directly on your machine. This is a development setup and should not be deployed as-is to a production environment.
+These steps show and explain the details of running the signer example locally directly on your machine (not in a Docker container). This is a development setup and should not be deployed as-is to a production environment.
 
 ### Set up with AWS credentials
 
@@ -145,11 +147,13 @@ aws_session_token=...
 
 ### Using LocalStack
 
+Instead of calling AWS services, you can use [LocalStack](https://www.localstack.cloud/) to run the example entirely on your local machine, simulating interactions with AWS. 
+
+NOTE: This setup is suitable for development only.
+
 #### Set up the LocalStack environment
 
-This setup is only recommended for development.
-
-[LocalStack](https://www.localstack.cloud/) enables you to run this example entirely on your local machine, simulating interactions with AWS. To install LocalStack, follow the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+Install LocalStack followin the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
 
 #### Run LocalStack
 
@@ -164,7 +168,7 @@ Warning: Anything configured in LocalStack is transient, and will be lost on res
 
 #### Install awslocal CLI
 
-To facilitate interacting with LocalStack, install the CLI tool `awslocal` that substitutes for the `aws` CLI while LocalStack is running. For more information, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
+To interact with LocalStack, install the CLI tool `awslocal` that substitutes for the `aws` CLI while LocalStack is running. For more information, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
 
 Follow these steps:
 
