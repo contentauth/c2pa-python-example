@@ -153,7 +153,7 @@ NOTE: This setup is suitable for development only.
 
 #### Set up the LocalStack environment
 
-Install LocalStack followin the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+Install LocalStack following the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
 
 #### Run LocalStack
 
