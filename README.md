@@ -15,7 +15,86 @@ A CSR comprises a public key, as well as a common name, organization, city, stat
 
 You sign the CSR with your private key; this proves to the CA that you have control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the public key to indicate that it can be publicly trusted.
 
-## Prerequisites
+## Setup to use Docker
+
+The example code from this repository can run in Docker containers with default  configurations. The Docker containers use LocalStack to run a localized environment that simulates interactions with AWS. This is the quickest way to spin up a working development environment (without doing additional configuration.) 
+
+NOTE: This is a development setup and should not be deployed as-is to a production environment.
+
+### Supported Docker versions
+
+The example runs with Docker Desktop version 4.34.3 (170107) or later.
+
+### Run the local setup
+
+Build and run the Docker containers by entering this command:
+
+```shell
+make local
+```
+
+The command will first build and then run the containers using the [docker-compose file](docker-compose.yaml), which does the following:
+
+1. Uses LocalStack to run a mock AWS infrastructure in a container called `localstack-main`.
+2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (for example, creating mocked AWS users in LocalStack and certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference to the `config_volume` directory in the root of this repository. Note that changing the values of the configurations in this directory does not affect the running Docker setup, nor after restarting it.
+3. The signing server starts with default configuration in the `local-signer` container.
+4. Once the signing server is ready, the example runs a self-check using the Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a directory created at the root of this repo, `client_volume/signed_images`.
+
+When the `make local` command finishes, it displays something like this:
+
+```shell
+(...Docker images build details...)
+
+--- Running containers.........
+
+docker compose up -d
+[+] Running 5/5
+ ✔ Network c2pa-python-example_default  Created                                                              0.0s
+ ✔ Container localstack-main            Started                                                              0.3s
+ ✔ Container local-setup                Exited                                                               0.8s
+ ✔ Container local-signer               Healthy                                                              6.4s
+ ✔ Container local-client               Started
+```
+
+### Re-run the Python client container
+
+To re-run the Python client, enter the following command from the root of this repository:
+
+```shell
+docker compose run --entrypoint "Python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
+```
+
+Replace `./tests/A.jpg` with the path to the image you want to sign.
+
+### Clean up the local setup
+
+After trying out the example, be sure to stop and remove the containers by running this command at the root of this repository:
+
+```shell
+make clean
+```
+
+Once the cleanup is done, you'll see messages similar to this:
+
+```shell
+
+--- Cleaning up.................
+
+docker compose down --volumes --remove-orphans
+[+] Running 6/6
+ ✔ Container local-client                 Removed                                                            0.0s 
+ ✔ Container local-signer                 Removed                                                           10.1s 
+ ✔ Container localstack-main              Removed                                                            1.1s 
+ ✔ Container local-setup                  Removed                                                            0.0s 
+ ✔ Volume c2pa-Python-example_local-data  Removed                                                            0.0s 
+ ✔ Network c2pa-Python-example_default    Removed
+```
+
+## Setting up to run the example locally
+
+These steps show and explain the details of running the signer example locally directly on your machine (not in a Docker container). This is a development setup and should not be deployed as-is to a production environment.
+
+### Prerequisites
 
 To build and run this app, you must install:
 
@@ -26,7 +105,7 @@ If you wish to run this example with AWS, you must also have an AWS account and 
 
 NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
 
-## Install dependencies
+### Install dependencies
 
 Open a terminal window and follow these steps:
 
@@ -52,8 +131,6 @@ Open a terminal window and follow these steps:
     ...
     ```
 
-## Setting up to run the example
-
 ### Set up with AWS credentials
 
 You must have an AWS account and be able to get standard AWS access credentials so you can use KMS.
@@ -70,11 +147,13 @@ aws_session_token=...
 
 ### Using LocalStack
 
+Instead of calling AWS services, you can use [LocalStack](https://www.localstack.cloud/) to run the example entirely on your local machine, simulating interactions with AWS. 
+
+NOTE: This setup is suitable for development only.
+
 #### Set up the LocalStack environment
 
-This setup is only recommended for development.
-
-[LocalStack](https://www.localstack.cloud/) enables you to run this example entirely on your local machine, simulating interactions with AWS. To install LocalStack, follow the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
+Install LocalStack following the [installation instructions](https://docs.localstack.cloud/getting-started/installation/) for your configuration.
 
 #### Run LocalStack
 
@@ -89,7 +168,7 @@ Warning: Anything configured in LocalStack is transient, and will be lost on res
 
 #### Install awslocal CLI
 
-To facilitate interacting with LocalStack, install the CLI tool `awslocal` that substitutes for the `aws` CLI while LocalStack is running. For more information, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
+To interact with LocalStack, install the CLI tool `awslocal` that substitutes for the `aws` CLI while LocalStack is running. For more information, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/integrations/aws-cli/).
 
 Follow these steps:
 
@@ -148,11 +227,11 @@ Confirm that:
 
 For more information on identity and access management with LocalStack, see the [LocalStack documentation](https://docs.localstack.cloud/user-guide/aws/iam/).
 
-## Get KMS key and CSR
+### Get KMS key and CSR
 
 NOTE: Amazon KMS uses Distinguished Encoding Rules (DER) encoding for cryptographic keys. The C2PA specification does not provide for DER support, but the CAI open-source SDK automatically converts it to a supported format.
 
-### Use an existing KMS key
+#### Use an existing KMS key
 
 If you have an existing KMS key that you want to use for signing, follow these steps to generate a CSR:
 
@@ -176,7 +255,7 @@ If you have an existing KMS key that you want to use for signing, follow these s
     "C=US,ST=NY,L=NeW York,O=EXACT ORGANIZATION NAME,CN=EXACT ORGANIZATION NAME"
     ```
 
-### Generate a KMS key and CSR
+#### Generate a KMS key and CSR
 
 If you don't have an existing KMS key, follow these steps to generate a KMS key and CSR:
 
@@ -197,19 +276,11 @@ If you don't have an existing KMS key, follow these steps to generate a KMS key 
 
     ```shell
     Created KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Consider setting an environment variable:
-    `export KMS_KEY_ID=cdd59e61-b6fa-4d95-b71f-8d6ae3abc123`
     ```
 
-    By default, when the setup.py script command is run from the root of this repository, this will create a file name `kms-signing.csr` at the root of the repository.
+    By default, when the setup.py script command is run from the root of this repository, this will create a file name `kms-signing.csr` at the root of the repository. The setup.py script will also add add the value of the generated key id to a local `.env` file under the key `KMS_KEY_ID`.
 
-1. Copy the command from the terminal to set the KMS_KEY_ID environment variable; for example:
-
-    ```shell
-    export KMS_KEY_ID=abc12361-b6fa-4d95-b71f-8d6ae3abc123
-    ```
-
-## Get certificate
+### Get a certificate for signing
 
 When purchasing a certificate and key, you might be able to simply click a "Buy" button on the CA's website. Or your can make your own key, create an CSR, and send it to CA.  In either case what comes back is the signed certificate that you use to create a certificate chain.
 
@@ -302,7 +373,7 @@ The [`openssl x509 -req`](https://docs.openssl.org/master/man1/openssl-x509/) co
 | -days 365 | Specifies that the newly-generated certificate expires in 365 days. |
 | -copy_extensions copyall | Copy all extensions, except that subject identifier and authority key identifier extensions. |
 
-## Create certificate chain
+### Create certificate chain
 
 Create certificate chain file PEM with certificate issued by CA and CA Root certificate. For example, with the self-signed certificate:
 
@@ -312,7 +383,7 @@ cat kms-signing.crt rootCA.crt > chain.pem
 
 By default, when this command is run from the root of this repository, this will place the certificate chain in the root of this repository (file named `chain.pem`). As a reminder, this `chain.pem` file is a chain of certificates (and not a signing key).
 
-## Run the application
+### Run the application
 
 1. Run the application by entering this command:
 
@@ -320,19 +391,18 @@ By default, when this command is run from the root of this repository, this will
     python3 app.py
     ```
 
-    You'll see a response like this:
+    You'll see a response like this:``
 
     ```shell
+    Using KMS for signing
+    Running example in dev mode with AWS endpoint: http://localhost.localstack.cloud:4566/
     Using KMS key: cdd59e61-b6fa-4d95-b71f-8d6ae3abc123
-    Using certificate chain: ./chain.pem
-    * Debug mode: off
-    WARNING: This is a development server. Do not use it in a production deployment.
-    Use a production WSGI server instead.
-    * Running on http://127.0.0.1:5000
-    Press CTRL+C to quit
+    Using certificate chain: chain.pem
+    Press CTRL+C to stop the server
+    INFO:waitress:Serving on http://0.0.0.0:5000
     ```
 
-2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:
+2. Upload and sign image: In another terminal window, use `curl` to upload an image file (the app works only with JPEGs) and have the app sign it by entering a command like this:
 
     ```shell
     curl -X POST -T "<PATH_TO_JPEG>" -o <SIGNED_FILE_NAME>.jpg 'http://localhost:5000/attach'
@@ -352,35 +422,3 @@ Confirm that the app signed the output image by doing one of these:
 
 - If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
-
-## Docker Setup
-
-### Pre-requisites
-
-- Docker Desktop version 4.34.3 (170107) or later.
-
-### Run the local setup
-
-This builds and runs the containers.
-
-```shell
-make local
-```
-
-### Re-run the python client
-
-In order to re-run the python client, run the following command:
-
-```shell
-docker compose run --entrypoint "python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
-```
-
-Make sure to replace `./tests/A.jpg` with the path to the image you want to sign.
-
-### Cleanup the local setup
-
-This will stop and remove the containers.
-
-```shell
-make clean
-```

@@ -14,9 +14,6 @@ else
     echo "Creating KMS key in localstack"
     python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo'
 
-    echo "Adding KMS_KEY_ID to .env.local"
-    cat config.json | jq -r '"KMS_KEY_ID=\(.kms_key_id)"' >> .env.local
-
     # We should use some default values for the root CA certificate
     echo "Creating root CA certificate"
     openssl req -x509 \
@@ -61,4 +58,11 @@ EOT
 
     echo "Copying .env.local to local_volume/.env"
     cp .env.local local_volume/.env
+
+    # Copy config of interest in another mapped volume for reference
+    cp .env.local config_volume/.env
+    cp kms-signing.crt  config_volume/kms-signing.crt
+    cp rootCA.crt  config_volume/rootCA.crt
+    cp chain.pem config_volume/chain.pem
+
 fi

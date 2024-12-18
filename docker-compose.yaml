@@ -62,6 +62,7 @@ services:
     environment:
       ENV_FILE_PATH: .env.local
     volumes:
+      - "${CLIENT_VOLUME_DIR:-./config_volume}:/usr/src/app/config_volume"
       - "local-data:/usr/src/app/local_volume"
 volumes:
   local-data:
