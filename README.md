@@ -15,52 +15,15 @@ A CSR comprises a public key, as well as a common name, organization, city, stat
 
 You sign the CSR with your private key; this proves to the CA that you have control of the private key that corresponds to the public key included in the CSR. Once the requested information in a CSR passes a vetting process and domain control is established, the CA may sign the public key to indicate that it can be publicly trusted.
 
-## Prerequisites
-
-To build and run this app, you must install:
-
-- Python 3.10 or Python 3.12.
-- OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
-
-If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. To run this example entirely locally for development and testing, follow the steps in [Using LocalStack](README.md#using-localstack) to setup and run a mock AWS environment runing locally.
-
-NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
-
-## Install dependencies
-
-Open a terminal window and follow these steps:
-
-1. Set up [virtual environment](https://docs.python.org/3/library/venv.html) by entering these commands:
-
-    ```shell
-    python -m venv c2pa-env
-    source c2pa-env/bin/activate
-    ```
-
-    In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.
-1. Install dependencies:
-
-    ```shell
-    cd c2pa-python-example
-    pip install -r requirements.txt
-    ```
-
-    You will see this output in the terminal:
-
-    ```shell
-    Collecting c2pa-python==0.5.0
-    ...
-    ```
-
 ## Setup to use Docker
 
 The example code from this repository can run in Docker containers with default  configurations. The Docker containers use LocalStack to run a localized environment that simulates interactions with AWS. This is the quickest way to spin up a working development environment (without doing additional configuration.) 
 
 NOTE: This is a development setup and should not be deployed as-is to a production environment.
 
-### Prerequisites
+### Supported Docker versions
 
-You must have Docker Desktop version 4.34.3 (170107) or later.
+The example runs with Docker Desktop version 4.34.3 (170107) or later.
 
 ### Run the local setup
 
@@ -130,6 +93,43 @@ docker compose down --volumes --remove-orphans
 ## Setting up to run the example locally
 
 These steps show and explain the details of running the signer example locally directly on your machine (not in a Docker container). This is a development setup and should not be deployed as-is to a production environment.
+
+### Prerequisites
+
+To build and run this app, you must install:
+
+- Python 3.10 or Python 3.12.
+- OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
+
+If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. To run this example entirely locally for development and testing, follow the steps in [Using LocalStack](README.md#using-localstack) to setup and run a mock AWS environment runing locally.
+
+NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
+
+### Install dependencies
+
+Open a terminal window and follow these steps:
+
+1. Set up [virtual environment](https://docs.python.org/3/library/venv.html) by entering these commands:
+
+    ```shell
+    python -m venv c2pa-env
+    source c2pa-env/bin/activate
+    ```
+
+    In the first command, `c2pa-env` is the name of the virtual environment; you can use another name if you wish. These two commands do not produce any output in the terminal window, but your prompt will change to `(c2pa-env)` or whatever environment name you chose.
+1. Install dependencies:
+
+    ```shell
+    cd c2pa-python-example
+    pip install -r requirements.txt
+    ```
+
+    You will see this output in the terminal:
+
+    ```shell
+    Collecting c2pa-python==0.5.0
+    ...
+    ```
 
 ### Set up with AWS credentials
 
