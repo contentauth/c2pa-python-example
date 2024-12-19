@@ -1,4 +1,4 @@
-c2pa-python==0.5.2
+c2pa-python==0.6.1
 boto3
 pyyaml
 pyasn1==0.4.8
@@ -7,3 +7,9 @@ flask
 cryptography
 arguably
 python-pkcs11
+python-dotenv==1.0.1
+boto3
+requests
+pillow
+flask_cors
+waitress

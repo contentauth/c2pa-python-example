@@ -3,7 +3,6 @@
 import arguably
 
 import boto3
-import yaml
 
 from pyasn1.codec.der import decoder, encoder
 from pyasn1.type import univ
@@ -13,16 +12,18 @@ import pyasn1_modules.rfc2314
 import hashlib
 import base64
 import textwrap
-import sys
+import os
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.x509 import Name, CertificateSigningRequestBuilder, NameAttribute, SignatureAlgorithmOID, ExtensionType, OID_TIME_STAMPING, OID_CODE_SIGNING, OID_KEY_USAGE, OID_EXTENDED_KEY_USAGE, OID_BASIC_CONSTRAINTS
+from cryptography.x509 import Name, CertificateSigningRequestBuilder
 from cryptography.hazmat.primitives.asymmetric import ec
-from pathlib import Path
-import json
 
 
+# Load environment variable from .env file
+from dotenv import dotenv_values, find_dotenv, set_key
+
+# Set constants
 start_marker = '-----BEGIN CERTIFICATE REQUEST-----'
 end_marker = '-----END CERTIFICATE REQUEST-----'
 hash_alg = 'ECDSA_SHA_256'
@@ -31,38 +32,143 @@ hash_alg = 'ECDSA_SHA_256'
 # [^1]: https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.SignatureAlgorithmOID.ECDSA_WITH_SHA256
 sign_oid = '1.2.840.10045.4.3.2'
 csr_file = 'kms-signing.csr'
-config_file = 'config.json'
 
-kms = boto3.client('kms')
 
-def create_kms_key():
-    response = kms.create_key(
-        Description='C2PA Python KMS Demo Key',
-        KeyUsage='SIGN_VERIFY',
-        KeySpec='ECC_NIST_P256',
-    )
+def read_env_params(env_file_path=None):
+  """Read environment variables from a given file path or default .env file"""
+
+  if env_file_path is not None:
+      print(f'Loading environment variables from: {env_file_path}')
+      app_config = dotenv_values(dotenv_path=env_file_path)
+  else:
+    print('No env file path received as param. Looking at other possible locations...')
+
+    env_file_path = os.environ.get('ENV_FILE_PATH')
+    if env_file_path is not None:
+        print(f'Loading environment variables from {env_file_path} file defined in env vars')
+        app_config = dotenv_values(env_file_path)
+    else:
+        print('Loading env variables values from default .env file')
+        app_config = dotenv_values(".env")
+
+  kms = None
+  run_mode = app_config['RUN_MODE']
+
+  if 'RUN_MODE' in app_config and run_mode == 'DEV':
+      # Run in dev/local mode (eg. with LocalStack)
+      endpoint_url = app_config['AWS_ENDPOINT_URL']
+      print(f'Running example setup in dev mode with endpoint: {endpoint_url}')
+
+      region = app_config['AWS_REGION']
+      aws_access_key_id = app_config['AWS_ACCESS_KEY_ID']
+      aws_secret_access_key = app_config['AWS_SECRET_ACCESS_KEY']
+
+      # Use variables from .env file as parameter values
+      try:
+        kms = boto3.client('kms',
+                            endpoint_url=endpoint_url,
+                            region_name=region,
+                            aws_access_key_id=aws_access_key_id,
+                            aws_secret_access_key=aws_secret_access_key)
+      except Exception as e:
+        print('Error during KMS client setup in dev mode:')
+        print(e)
+        raise Exception('KMS dev setup failed: Error during KMS client setup in dev mode')
+
+  else:
+      # Example setup for use with AWS credentials setup (no LocalStack use)
+      kms = boto3.client('kms')
+
+  return kms
+
+
+def create_kms_key(env_file_path=None):
+    """Create KMS key and set environment variables (KMS key ID)."""
+
+    kms = None
+    if env_file_path is not None:
+        print(f'Using env variables from {env_file_path} to build environment and KMS client')
+        kms = read_env_params(env_file_path)
+    else:
+        print(f'Using default environment to build environment and KMS client')
+        kms = read_env_params()
+
+
+    try:
+      if kms is not None:
+        response = kms.create_key(
+            Description='C2PA Python KMS Demo Key',
+            KeyUsage='SIGN_VERIFY',
+            KeySpec='ECC_NIST_P256',
+        )
+      else:
+        print('Error during KMS client setup')
+        raise Exception('No KMS key id generated (Error during KMS client setup)')
+    except Exception as e:
+      print(f'Error during KMS key creation: {e}')
+      raise Exception('No KMS key id generated (Error during KMS key creation)')
 
     key_id = response['KeyMetadata']['KeyId']
-    print(f'Created KMS key: {key_id}')
-    print(f'Consider setting an environment variable: `export KMS_KEY_ID={key_id}`')
 
-    open('config.json', 'wt').write(json.dumps({'kms_key_id': key_id}))
+    if key_id is None:
+      print('Error during KMS key creation')
+      raise Exception('No KMS key id generated')
+
+    print(f'Created KMS key: {key_id}')
+    os.environ['KMS_KEY_ID'] = key_id
+    print(f'Set KMS_KEY_ID environment variable to the generated KMS key ID {key_id}')
+
+    try:
+      if env_file_path is not None:
+        # Use defined env file path
+        set_key(env_file_path, "KMS_KEY_ID", key_id)
+      else:
+        # Env file defined in env vars, we'll place the key there
+        env_file_to_use = os.environ.get('ENV_FILE_PATH')
+        if env_file_to_use is None:
+            # Look for default .env file, if any
+            env_file_to_use = find_dotenv(filename='.env', raise_error_if_not_found=False)
+
+        if env_file_to_use is not None:
+          set_key(env_file_to_use, "KMS_KEY_ID", key_id)
+          print(f'KMS_KEY_ID value updated in .env file {env_file_to_use}')
+        else:
+          print("No env file found to add KMS_KEY_ID to")
+    except:
+      print("Could not update any .env file to include a KMS_KEY_ID with the generated KMS key ID as matching value")
+      print(f'Consider setting an environment variable instead: `export KMS_KEY_ID={key_id}`')
 
     return key_id
 
+# Example call: python setup.py create-key-and-csr 'CN=John Smith,O=C2PA Python Demo' './my-env-file.env'
+@arguably.command
+def create_key_and_csr(subject, env_file_path=None):
+    """Create KMS key anc CSR signing request file using generated KMS key"""
+
+    key_id = create_kms_key(env_file_path)
+
+    if key_id is not None:
+        print(f'Generating KMS key with subject: {subject}')
+        generate_certificate_request(key_id, subject, env_file_path)
+    else:
+        print('Error during KMS key ID generation')
+        raise Exception('No KMS key id generated')
+
 
 @arguably.command
-def create_key_and_csr(subject):
-    key_id = create_kms_key()
-    generate_certificate_request(key_id, subject)
+def generate_certificate_request(kms_key: str, subject: str, env_file_path=None):
+    """Generate CSR signing request file using a kMS key"""
 
-
-@arguably.command
-def generate_certificate_request(kms_key: str, subject: str):
-
-    kms = boto3.client('kms')
+    if env_file_path is not None:
+        print(f'Using env variables from {env_file_path} to build environment and KMS client')
+        kms = read_env_params(env_file_path)
+    else:
+        print(f'Using default environment to build environment and KMS client')
+        kms = read_env_params()
 
     key_obj = kms.describe_key(KeyId=kms_key)
+    # Show structure of key object
+    # print(key_obj)
 
     # Get public key from KMS
     response = kms.get_public_key(KeyId=kms_key)
@@ -130,12 +236,13 @@ def generate_certificate_request(kms_key: str, subject: str):
         'signature', univ.BitString.fromOctetString(signature))
     build_output(csr_request)
 
-    f = open(csr_file, "w")
-    f.write(build_output(csr_request))
-    f.close()
+    with open(csr_file, "w") as f:
+        f.write(build_output(csr_request))
 
 
 def build_output(csr):
+    """Output content to a file (used in the example for CSR)"""
+
     out = start_marker + '\n'
     b64 = base64.b64encode(encoder.encode(csr)).decode('ascii')
     for line in textwrap.wrap(b64, width=64):

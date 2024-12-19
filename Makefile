@@ -1,12 +1,15 @@
 title = "\n---$(shell tput bold)$(shell tput setaf 2)$1 $(shell tput sgr0)\n"
 
-init:
-	@echo $(call title, "Generating KMS key and CMS cert.......")
-
 build:
-	@echo $(call title, "Building container........")
+	@echo $(call title, "Building containers........")
+	docker compose build
 
 run:
-	@echo $(call title, "Running container.........")
+	@echo $(call title, "Running containers.........")
+	docker compose up -d
 
-dev: init build
+local: build run
+
+clean:
+	@echo $(call title, "Cleaning up.................")
+	docker compose down --volumes --remove-orphans

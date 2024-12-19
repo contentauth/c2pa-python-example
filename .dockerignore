@@ -1,0 +1,12 @@
+.gitignore
+*.md
+docker-compose.yml
+example-env.env
+LICENSE
+README.md
+*.txt
+!requirements.txt
+Makefile
+volume/
+local_volume/
+client_volume/
