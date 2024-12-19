@@ -17,7 +17,7 @@ You sign the CSR with your private key; this proves to the CA that you have cont
 
 ## Setup to use Docker
 
-The example code from this repository can run in Docker containers with default  configurations. The Docker containers use LocalStack to run a localized environment that simulates interactions with AWS. This is the quickest way to spin up a working development environment (without doing additional configuration.) 
+The example code from this repository can run in Docker containers with default  configurations. The Docker containers use LocalStack to run a localized environment that simulates interactions with AWS. This is the quickest way to spin up a working development environment (without doing additional configuration.)
 
 NOTE: This is a development setup and should not be deployed as-is to a production environment.
 
@@ -25,7 +25,7 @@ NOTE: This is a development setup and should not be deployed as-is to a producti
 
 The example runs with Docker Desktop version 4.34.3 (170107) or later.
 
-### Run the local setup
+### Run the app in Docker container
 
 Build and run the Docker containers by entering this command:
 
@@ -58,7 +58,7 @@ docker compose up -d
 
 ### Re-run the Python client container
 
-To re-run the Python client, enter the following command from the root of this repository:
+When running `make local` to start the example, the included Python client runs only once. If you wish to re-run the Python client, enter the following command from the root of this repository:
 
 ```shell
 docker compose run --entrypoint "Python tests/client.py ./tests/A.jpg -o client_volume/signed-images" client
@@ -90,9 +90,9 @@ docker compose down --volumes --remove-orphans
  ✔ Network c2pa-Python-example_default    Removed
 ```
 
-## Setting up to run the example locally
+## Run the example locally
 
-These steps show and explain the details of running the signer example locally directly on your machine (not in a Docker container). This is a development setup and should not be deployed as-is to a production environment.
+These steps show and explain the details of running the signer example locally directly on your machine (not in a Docker container). First, use LocalStack to mock the AWS API, and then once you have everything running locally, switch to using the real AWS account. This is a development setup and should not be deployed as-is to a production environment.
 
 ### Prerequisites
 
@@ -184,7 +184,15 @@ Follow these steps:
 
 #### Create an environment file
 
-The app uses environment variables to get credentials and the LocalStack endpoint to access. Therefore, you need to set up a `.env` file in the root of the repository following the format of the [example-env.env file](example-env.env) file. The setup script and the Flask app will then get the values from the `.env` file.
+The app gets the AWS credentials and the LocalStack endpoint to access from environment variables, which are set by the `.env` file in the root of the repository. To create this file:
+
+1. Copy the provided template file example-env.env file:
+
+```shell
+cp example-env.env .env
+```
+
+1. Edit the `.env` file as needed to set the values described below.
 
 The environment file contains these values:
 
@@ -420,5 +428,5 @@ If you encounter any issues running the `curl` command, try using `127.0.0.1` in
 
 Confirm that the app signed the output image by doing one of these:
 
-- If you've installed [C2PA Tool](https://github.com/contentauth/c2patool), run `c2patool <SIGNED_FILE_NAME>.jpg`.
+- If you've installed [C2PA Tool](https://github.com/contentauth/c2pa-rs/tree/main/cli), run `c2patool <SIGNED_FILE_NAME>.jpg`.
 - Upload the image to https://contentcredentials.org/verify. Note that Verify will display the message **This Content Credential was issued by an unknown source** because it was signed with a certificate not on the [known certificate list](https://opensource.contentauthenticity.org/docs/verify-known-cert-list).
