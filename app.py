@@ -22,6 +22,9 @@ from flask_cors import CORS
 from c2pa import Builder, C2paSigningAlg, C2paSignerInfo, Signer, C2paError
 from c2pa.c2pa import ed25519_sign
 from hashlib import sha256
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.backends import default_backend
 
 
 # Load environment variable from .env file
@@ -46,8 +49,8 @@ CORS(app)
 # By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
 
-# Declare global variables for KMS
-global kms, kms_key_id
+# Declare global variables
+global private_key, kms, kms_key_id
 
 private_key = None
 kms = None
@@ -80,7 +83,7 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     signing_alg_str = 'PS256'
 else:
     print('Using KMS for signing')
-    
+
     kms_key_id = app_config['KMS_KEY_ID']
 
     cert_chain_path = app_config['CERT_CHAIN_PATH']
@@ -124,10 +127,8 @@ except AttributeError:
 
 
 @app.route("/attach", methods=["POST"])
-def resize():
+def attach_sign_image():
     """Gets a JPEG image to sign and returns the signed JPEG image"""
-
-    print("## Calling attach")
 
     request_data = request.get_data()
     content_type = request.headers.get('Content-Type', 'image/jpeg')  # Default to 'image/jpeg' if not provided
@@ -170,26 +171,39 @@ def resize():
           )
 
           result = io.BytesIO(b"")
-
-          print('## Calling builder.sign')
           builder.sign(signer, content_type, io.BytesIO(request_data), result)
 
           return result.getvalue()
     except Exception as e:
-        print('## Error in signing')
         logging.error(e)
         abort(500, description=e)
+
+
+# Uses PS256 alg to sign
+def ps256_sign(data: bytes) -> bytes:
+    """Signs the data using PS256 algorithm with the private key"""
+    private_key_obj = serialization.load_pem_private_key(
+        private_key,
+        password=None,
+        backend=default_backend()
+    )
+    signature = private_key_obj.sign(
+        data,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+    )
+    return signature
 
 
 # Uses KMS to sign
 def kms_sign(data: bytes) -> bytes:
     """Signs the data using a KMS key id"""
 
-    print("## Calling kms_sign")
     hashed_data = sha256(data).digest()
-    print('## KMS hash', hashed_data)
     result = kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
-    print('## KMS sign result', result)
     return result
 
 
@@ -227,9 +241,8 @@ def sign():
     try:
         data = request.get_data()
         if private_key is not None:
-            # TODO: Update keys
-            print('Using ed25519_sign')
-            return ed25519_sign(data, private_key)
+            print('Using ps256_sign')
+            return ps256_sign(data)
         else:
             print('Using kms_sign')
             return kms_sign(data)
