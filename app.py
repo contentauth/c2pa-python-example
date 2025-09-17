@@ -19,7 +19,8 @@ import os
 import boto3
 import base64
 from flask_cors import CORS
-from c2pa import *
+from c2pa import Builder, C2paSigningAlg, C2paSignerInfo, Signer, C2paError
+from c2pa.c2pa import ed25519_sign
 from hashlib import sha256
 
 
@@ -45,7 +46,12 @@ CORS(app)
 # By default, env vars with the `FLASK_`` prefix
 # app.config.from_prefixed_env()
 
+# Declare global variables for KMS
+global kms, kms_key_id
+
 private_key = None
+kms = None
+kms_key_id = None
 
 if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development (and test client)
@@ -74,7 +80,7 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     signing_alg_str = 'PS256'
 else:
     print('Using KMS for signing')
-
+    
     kms_key_id = app_config['KMS_KEY_ID']
 
     cert_chain_path = app_config['CERT_CHAIN_PATH']
@@ -112,7 +118,7 @@ else:
 
 # TODO: Get signing_alg_str from env when we support more algorithms
 try:
-    signing_alg = getattr(SigningAlg, signing_alg_str)
+    signing_alg = getattr(C2paSigningAlg, signing_alg_str)
 except AttributeError:
     raise ValueError(f"Unsupported signing algorithm: {signing_alg_str}")
 
@@ -120,6 +126,8 @@ except AttributeError:
 @app.route("/attach", methods=["POST"])
 def resize():
     """Gets a JPEG image to sign and returns the signed JPEG image"""
+
+    print("## Calling attach")
 
     request_data = request.get_data()
     content_type = request.headers.get('Content-Type', 'image/jpeg')  # Default to 'image/jpeg' if not provided
@@ -152,16 +160,23 @@ def resize():
     })
 
     try:
-      builder = Builder(manifest)
+      with Builder(manifest) as builder:
+          # Create signer using the new API
+          signer = Signer.from_callback(
+              callback=kms_sign,
+              alg=signing_alg,
+              certs=cert_chain,
+              tsa_url=timestamp_url
+          )
 
-      signer = create_signer(kms_sign, signing_alg,
-                            cert_chain, timestamp_url)
+          result = io.BytesIO(b"")
 
-      result = io.BytesIO(b"")
-      builder.sign(signer, content_type, io.BytesIO(request_data), result)
+          print('## Calling builder.sign')
+          builder.sign(signer, content_type, io.BytesIO(request_data), result)
 
-      return result.getvalue()
+          return result.getvalue()
     except Exception as e:
+        print('## Error in signing')
         logging.error(e)
         abort(500, description=e)
 
@@ -170,8 +185,12 @@ def resize():
 def kms_sign(data: bytes) -> bytes:
     """Signs the data using a KMS key id"""
 
+    print("## Calling kms_sign")
     hashed_data = sha256(data).digest()
-    return kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
+    print('## KMS hash', hashed_data)
+    result = kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
+    print('## KMS sign result', result)
+    return result
 
 
 @app.route("/health", methods=["GET"])
@@ -208,8 +227,9 @@ def sign():
     try:
         data = request.get_data()
         if private_key is not None:
-            print('Using sign_ps256')
-            return sign_ps256(data, private_key)
+            # TODO: Update keys
+            print('Using ed25519_sign')
+            return ed25519_sign(data, private_key)
         else:
             print('Using kms_sign')
             return kms_sign(data)
