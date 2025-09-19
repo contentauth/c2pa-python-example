@@ -23,7 +23,7 @@ from c2pa import Builder, C2paSigningAlg, C2paSignerInfo, Signer, C2paError
 from c2pa.c2pa import ed25519_sign
 from hashlib import sha256
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.asymmetric import rsa, padding, ec
 from cryptography.hazmat.backends import default_backend
 
 
@@ -60,27 +60,27 @@ if 'USE_LOCAL_KEYS' in app_config and app_config['USE_LOCAL_KEYS'] == 'True':
     # local test certs for development (and test client)
     print('Using local test certs for signing')
 
-    env_ps256_pem_path = os.environ.get('PS256_PEM_PATH_PYTHON_EXAMPLE')
+    env_es256_pem_path = os.environ.get('ES256_PEM_PATH_PYTHON_EXAMPLE')
     env_cert_chain_path = os.environ.get('CERT_CHAIN_PATH_PYTHON_EXAMPLE')
-    ps256_pem_path = 'tests/test-certs/ps256.pem'
-    cert_chain_path = 'tests/test-certs/ps256.pub'
+    es256_pem_path = 'tests/test-certs/es256_private.key'
+    cert_chain_path = 'tests/test-certs/es256_certs.pem'
 
-    if env_ps256_pem_path is not None and env_cert_chain_path is not None:
-        print(f"Using certificates pointed to by env variables {env_ps256_pem_path} and {env_cert_chain_path}")
-        ps256_pem_path = env_ps256_pem_path
+    if env_es256_pem_path is not None and env_cert_chain_path is not None:
+        print(f"Using certificates pointed to by env variables {env_es256_pem_path} and {env_cert_chain_path}")
+        es256_pem_path = env_es256_pem_path
         cert_chain_path = env_cert_chain_path
-    elif os.path.exists(ps256_pem_path) and os.path.exists(cert_chain_path):
-        print(f"Using certificates added locally to this repo {ps256_pem_path} and {cert_chain_path}")
+    elif os.path.exists(es256_pem_path) and os.path.exists(cert_chain_path):
+        print(f"Using certificates added locally to this repo {es256_pem_path} and {cert_chain_path}")
     else:
         print("Using provided default test certificates and certificate chain")
-        ps256_pem_path = 'tests/certs/ps256.pem'
-        cert_chain_path = 'tests/certs/ps256.pub'
+        es256_pem_path = 'tests/certs/es256_private.key'
+        cert_chain_path = 'tests/certs/es256_certs.pem'
 
-    private_key = open(ps256_pem_path, 'rb').read()
+    private_key = open(es256_pem_path, 'rb').read()
     cert_chain = open(cert_chain_path, 'rb').read()
 
     encoded_cert_chain = base64.b64encode(cert_chain).decode('utf-8')
-    signing_alg_str = 'PS256'
+    signing_alg_str = 'ES256'
 else:
     print('Using KMS for signing')
 
@@ -148,11 +148,12 @@ def attach_sign_image():
                 "data": {
                     "actions": [
                         {
-                            "action": "c2pa.edited",
+                            "action": "c2pa.created",
                             "softwareAgent": {
                                 "name": "C2PA Python Example",
                                 "version": "0.1.0"
-                            }
+                            },
+                            "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/digitalCreation"
                         }
                     ]
                 }
@@ -163,8 +164,9 @@ def attach_sign_image():
     try:
       with Builder(manifest) as builder:
           # Create signer using the new API
+          callback_func = es256_sign if private_key is not None else kms_sign
           signer = Signer.from_callback(
-              callback=kms_sign,
+              callback=callback_func,
               alg=signing_alg,
               certs=cert_chain,
               tsa_url=timestamp_url
@@ -179,9 +181,9 @@ def attach_sign_image():
         abort(500, description=e)
 
 
-# Uses PS256 alg to sign
-def ps256_sign(data: bytes) -> bytes:
-    """Signs the data using PS256 algorithm with the private key"""
+# Uses ES256 alg to sign
+def es256_sign(data: bytes) -> bytes:
+    """Signs the data using ES256 algorithm with the private key"""
     private_key_obj = serialization.load_pem_private_key(
         private_key,
         password=None,
@@ -189,11 +191,7 @@ def ps256_sign(data: bytes) -> bytes:
     )
     signature = private_key_obj.sign(
         data,
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH
-        ),
-        hashes.SHA256()
+        ec.ECDSA(hashes.SHA256())
     )
     return signature
 
@@ -201,9 +199,8 @@ def ps256_sign(data: bytes) -> bytes:
 # Uses KMS to sign
 def kms_sign(data: bytes) -> bytes:
     """Signs the data using a KMS key id"""
-
-    hashed_data = sha256(data).digest()
-    result = kms.sign(KeyId=kms_key_id, Message=hashed_data, MessageType="DIGEST", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
+    # C2PA library handles hashing internally, so we sign the raw data
+    result = kms.sign(KeyId=kms_key_id, Message=data, MessageType="RAW", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
     return result
 
 
@@ -241,8 +238,8 @@ def sign():
     try:
         data = request.get_data()
         if private_key is not None:
-            print('Using ps256_sign')
-            return ps256_sign(data)
+            print('Using es256_sign')
+            return es256_sign(data)
         else:
             print('Using kms_sign')
             return kms_sign(data)

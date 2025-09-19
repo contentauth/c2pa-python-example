@@ -14,7 +14,8 @@ import argparse
 import os
 import requests
 import json
-import c2pa
+import hashlib
+from c2pa import Builder, Signer, C2paSigningAlg
 from PIL import Image
 import io
 import base64
@@ -63,19 +64,20 @@ def get_signer_data_uri(env_file_path=None):
     return uri
 
 # Generate a sign function from signer data returned by the url
-def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
+def get_remote_signer(uri: str) -> Signer:
     response = requests.get(uri)
 
     if response.status_code == 200:
         json_data = response.json()
-        print(' Building signer based on respone data:')
+        print(' Building signer based on response data:')
         print(json_data)
         certs = json_data["cert_chain"]
         # Convert certs string to bytes using UTF-8 encoding
         certs = base64.b64decode(certs.encode("utf-8"))
         alg_str = json_data["alg"].upper()
         try:
-            alg = getattr(c2pa.SigningAlg, alg_str)
+            alg = getattr(C2paSigningAlg, alg_str)
+            print(f"Using signing algorithm: {alg}")
         except AttributeError:
             raise ValueError(f"Unsupported signing algorithm: {alg_str}")
     else:
@@ -92,7 +94,15 @@ def get_remote_signer(uri: str) -> c2pa.CallbackSigner:
             print(f"Response: {response.text}")
             raise
 
-    return c2pa.create_signer(remote_sign, alg, certs, json_data["timestamp_url"])
+    # Decode certs to string as expected by Signer.from_callback
+    certs_string = certs.decode('utf-8')
+
+    return Signer.from_callback(
+        callback=remote_sign,
+        alg=alg,
+        certs=certs_string,
+        tsa_url=json_data["timestamp_url"]
+    )
 
 # Generate a thumbnail from a file
 def make_thumbnail(file: str) -> io.BytesIO:
@@ -118,10 +128,14 @@ manifest = json.dumps({
             "data": {
                 "actions": [
                     {
+                        "action": "c2pa.created",
+                        "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/dataDrivenMedia",
+                    },
+                    {
                         "action": "c2pa.edited",
                         "softwareAgent": {
                             "name": "C2PA Python Example",
-                            "version": "0.1.0"
+                            "version": "0.2.0"
                         }
                     }
                 ]
@@ -160,15 +174,31 @@ signer = get_remote_signer(uri)
 # Sign each file and write to the output directory
 for file in args.files:
     output_file = os.path.join(args.output, os.path.basename(file))
-    builder = c2pa.Builder(manifest)
-    ingredient_json["title"] = os.path.basename(file)
-    builder.add_ingredient_file(ingredient_json, file)
-    builder.add_resource("thumbnail", make_thumbnail(file))
+    print(f"Signing file {file} and saving to {output_file}")
+
+    # Check if output file already exists
+    if os.path.exists(output_file):
+        print(f"Output file {output_file} already exists, skipping...")
+        continue
 
     try:
-        builder.sign_file(signer, file, output_file)
-        print(f"Signed {file} and saved to {output_file}")
+        with Builder(manifest) as builder:
+            # Set the title for this ingredient
+            ingredient_json["title"] = os.path.basename(file)
+            # Convert ingredient_json to JSON string
+            ingredient_json_str = json.dumps(ingredient_json)
+
+            # Add ingredient with proper file handle
+            with open(file, 'rb') as ingredient_file:
+                builder.add_ingredient(ingredient_json_str, "image/jpeg", ingredient_file)
+
+            # Add thumbnail resource
+            builder.add_resource("thumbnail", make_thumbnail(file))
+
+            # Sign the file using the new API
+            with open(file, 'rb') as source_file, open(output_file, 'w+b') as dest_file:
+                builder.sign(signer, "image/jpeg", source_file, dest_file)
+
+            print(f"Signed {file} and saved to {output_file}")
     except Exception as e:
-        # Signing fails if there is an existing destination file with the same name,
-        # as we don't override existing files
         print(f"Failed to sign {file}: {e}")
