@@ -14,7 +14,6 @@ import argparse
 import os
 import requests
 import json
-import hashlib
 from c2pa import Builder, Signer, C2paSigningAlg
 from PIL import Image
 import io
