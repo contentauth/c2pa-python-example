@@ -1,6 +1,6 @@
 # C2PA Client Documentation
 
-This directory contains the C2PA (Coalition for Content Provenance and Authenticity) client for signing JPEG images with digital manifests. This client is designed to work with the C2PA Python Example server in development mode using development demo certificates (included in this repository).
+This directory contains the client for signing JPEG images with content credentials. This client is designed to work with the C2PA Python Example server in development mode using demo certificates (included in this repository).
 
 ## Overview
 
@@ -9,11 +9,13 @@ The `client.py` file is a command-line test tool that signs JPEG image files. It
 ## Prerequisites
 
 1. **Python Dependencies**: Install required packages:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **Running signing Server**: The signing server (`app.py`) must be running using local certificates  and accessible to the client:
+
    ```bash
    python app.py
    ```
@@ -22,7 +24,7 @@ The `client.py` file is a command-line test tool that signs JPEG image files. It
 
 ## Usage
 
-Only JPEG images are supported with the test client. Note that the server uses demo certificates for signing.
+Only JPEG images are supported with this test client.
 
 ### Basic Command
 
