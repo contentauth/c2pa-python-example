@@ -198,7 +198,6 @@ def es256_sign(data: bytes) -> bytes:
 # Uses KMS to sign
 def kms_sign(data: bytes) -> bytes:
     """Signs the data using a KMS key id"""
-    # C2PA library handles hashing internally, so we sign the raw data
     result = kms.sign(KeyId=kms_key_id, Message=data, MessageType="RAW", SigningAlgorithm="ECDSA_SHA_256")["Signature"]
     return result
 
