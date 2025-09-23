@@ -115,7 +115,8 @@ else:
 if 'TIMESTAMP_URL' in app_config and app_config['TIMESTAMP_URL']:
     timestamp_url = app_config['TIMESTAMP_URL']
 else:
-    timestamp_url = 'http://timestamp.digicert.com' # Default timestamp URL (change to None later?)
+    # Default timestamp URL (change to None later?)
+    timestamp_url = 'http://timestamp.digicert.com'
 
 # TODO: Get signing_alg_str from env when we support more algorithms
 try:
@@ -160,20 +161,20 @@ def attach_sign_image():
     })
 
     try:
-      with Builder(manifest) as builder:
-          # Create signer using the new API
-          callback_func = es256_sign if private_key is not None else kms_sign
-          signer = Signer.from_callback(
-              callback=callback_func,
-              alg=signing_alg,
-              certs=cert_chain,
-              tsa_url=timestamp_url
-          )
+        with Builder(manifest) as builder:
+            # Create signer using the new API
+            callback_func = es256_sign if private_key is not None else kms_sign
+            signer = Signer.from_callback(
+                callback=callback_func,
+                alg=signing_alg,
+                certs=cert_chain,
+                tsa_url=timestamp_url
+            )
 
-          result = io.BytesIO(b"")
-          builder.sign(signer, content_type, io.BytesIO(request_data), result)
+            result = io.BytesIO(b"")
+            builder.sign(signer, content_type, io.BytesIO(request_data), result)
 
-          return result.getvalue()
+            return result.getvalue()
     except Exception as e:
         logging.error(e)
         abort(500, description=e)
