@@ -19,11 +19,9 @@ import os
 import boto3
 import base64
 from flask_cors import CORS
-from c2pa import Builder, C2paSigningAlg, C2paSignerInfo, Signer, C2paError
-from c2pa.c2pa import ed25519_sign
-from hashlib import sha256
+from c2pa import Builder, C2paSigningAlg, Signer
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, padding, ec
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
 
 
