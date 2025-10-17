@@ -10,19 +10,19 @@ The `client.py` file is a command-line test tool that signs JPEG image files. It
 
 ## Prerequisites
 
-1. Install Python Dependencies: 
+1. Install Python dependencies. Enter this command in the top level of the repo: 
 
    ```bash
    pip install -r requirements.txt
    ```
 
-2. Run signing server (`app.py`). It uses local certificates and must be accessible to the client:
+2. Run the signing server (`app.py`). It uses local certificates and must be accessible to the client:
 
    ```bash
    python app.py
    ```
 
-3. Provide image files to be signed.
+3. Run the client as explained below to submit images for the server to sign.
 
 ## Usage
 
