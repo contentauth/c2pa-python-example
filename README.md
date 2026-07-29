@@ -101,7 +101,7 @@ To build and run this app, you must install:
 - Python 3.10 or Python 3.12.
 - OpenSSL: See [OpenSSL](https://www.openssl.org/source/) for the source distribution or the [list of unofficial binary distributions](https://wiki.openssl.org/index.php/Binaries).  Make sure you have a recent version.
 
-If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. To run this example entirely locally for development and testing, follow the steps in [Using LocalStack](README.md#using-localstack) to setup and run a mock AWS environment runing locally.
+If you wish to run this example with AWS, you must also have an AWS account and be able to get standard AWS access credentials so you can use KMS. To run this example entirely locally for development and testing, follow the steps in [Using LocalStack](#using-localstack) to setup and run a mock AWS environment runing locally.
 
 NOTE: This app was developed and tested on macOS. It should also work on other operating systems, but on Windows you may have to take additional steps.
 
