@@ -33,10 +33,10 @@ Build and run the Docker containers by entering this command:
 make local
 ```
 
-The command will first build and then run the containers using the [docker-compose file](docker-compose.yaml), which does the following:
+The command will first build and then run the containers using the [`docker-compose`](https://github.com/contentauth/c2pa-python-example/blob/main/docker-compose.yaml) file, which does the following:
 
 1. Uses LocalStack to run a mock AWS infrastructure in a container called `localstack-main`.
-2. The setup scripts will run (using the code from [setup.py](setup.py) and [local-setup.sh](local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (for example, creating mocked AWS users in LocalStack and certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference to the `config_volume` directory in the root of this repository. Note that changing the values of the configurations in this directory does not affect the running Docker setup, nor after restarting it.
+2. The setup scripts will run (using the code from [`setup.py`](https://github.com/contentauth/c2pa-python-example/blob/main/setup.py) and [`local-setup.sh`](https://github.com/contentauth/c2pa-python-example/blob/main/local-setup.sh)) from a container called `local-setup` and configure the example, automating previous manual steps to have the supporting infrastructure (for example, creating mocked AWS users in LocalStack and certificate infrastructure). The container exits once the setup is done. The files created during setup are copied for reference to the `config_volume` directory in the root of this repository. Note that changing the values of the configurations in this directory does not affect the running Docker setup, nor after restarting it.
 3. The signing server starts with default configuration in the `local-signer` container.
 4. Once the signing server is ready, the example runs a self-check using the Python client and verifies that a default image placed in `client_volume/signed-images` can be signed using a `local-client` container. You can then also see the signed test file in a directory created at the root of this repo, `client_volume/signed_images`.
 
